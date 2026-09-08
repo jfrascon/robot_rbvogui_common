@@ -1,0 +1,38 @@
+# Each item in this file is one ROS <-> Gazebo bridge channel.
+# The topics listed here should match the topics configured in the simulation
+# plugins, or the topics derived from those plugin settings.
+
+  - topic_name: cmd_vel
+    ros_type_name: geometry_msgs/msg/Twist
+    gz_type_name: gz.msgs.Twist
+    direction: ROS_TO_GZ
+    qos_profile: SENSOR_DATA
+    lazy: true
+
+  - topic_name: base_pose_ground_truth
+    ros_type_name: nav_msgs/msg/Odometry
+    gz_type_name: gz.msgs.OdometryWithCovariance
+    direction: GZ_TO_ROS
+    qos_profile: SENSOR_DATA
+    lazy: true
+
+  - topic_name: tf_sim_world_fr_robot_root_fr
+    ros_type_name: tf2_msgs/msg/TFMessage
+    gz_type_name: gz.msgs.Pose_V
+    direction: GZ_TO_ROS
+    qos_profile: SENSOR_DATA
+    lazy: false
+
+  - topic_name: joint_commands/base
+    ros_type_name: actuator_msgs/msg/Actuators
+    gz_type_name: gz.msgs.Actuators
+    direction: ROS_TO_GZ
+    qos_profile: SENSOR_DATA
+    lazy: true
+
+  - topic_name: joint_states
+    ros_type_name: sensor_msgs/msg/JointState
+    gz_type_name: gz.msgs.Model
+    direction: GZ_TO_ROS
+    qos_profile: SENSOR_DATA
+    lazy: true

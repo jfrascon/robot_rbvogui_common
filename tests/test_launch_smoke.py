@@ -1,12 +1,27 @@
 import pytest
+
 from conftest import run_bash
 
 
 @pytest.mark.parametrize(
     ('launch_file', 'launch_args', 'expected_text'),
     [
-        ('model_base.launch.py', '', 'FourSwerveKinematicsSolverRos node initialized.'),
-        ('model_forklift.launch.py', 'use_sim_time:=True', 'Creating ROS->GZ Bridge: [cmd_vel'),
+        ('real_model_base.launch.py', '', 'FourSwerveKinematicsSolverRos node initialized.'),
+        (
+            'debug_model_base.launch.py',
+            'rviz_enabled:=False gzgui_enabled:=False',
+            'Creating ROS->GZ Bridge: [cmd_vel',
+        ),
+        (
+            'debug_model_base.launch.py',
+            'robot_description_topic:=rdesc rviz_enabled:=False gzgui_enabled:=False',
+            'Creating ROS->GZ Bridge: [cmd_vel',
+        ),
+        (
+            'debug_model_forklift.launch.py',
+            'rviz_enabled:=False gzgui_enabled:=False',
+            'JointPositionControllerServer node initialized.',
+        ),
     ],
 )
 def test_robot_launch_smoke(launch_file: str, launch_args: str, expected_text: str) -> None:

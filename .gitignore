@@ -1,3 +1,13 @@
+# ROS workspace artifacts
+build/
+install/
+devel/
+log/
+
+# Local dependencies
+src/0_deps/
+.devcontainer/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -6,6 +16,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+*.ruff_cache
 .coverage
 .coverage.*
 htmlcov/
@@ -13,10 +24,13 @@ htmlcov/
 venv/
 env/
 
-# ROS 2 / colcon
-build/
-install/
-log/
+# Tooling
+.cache/
+.pre-commit-cache/
+.devcontainer/
+.codex/
+.copilot/
+.github
 
 # Editors / OS
 .vscode/
@@ -26,3 +40,4 @@ log/
 *~
 .DS_Store
 Thumbs.db
+*.code-workspace

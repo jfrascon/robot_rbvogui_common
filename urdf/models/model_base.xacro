@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="vog_base" xmlns:xacro="http://www.ros.org/wiki/xacro" xmlns:gz="http://gazebosim.org/schema">
+<robot name="vog_base" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!--
   This file publishes the `base` model of the `robot_vog` family.
@@ -7,11 +7,8 @@
   -->
   <xacro:include filename="$(find robot_vog)/urdf/includes/common.xacro"/>
 
-  <!--
-  Be aware that if a property is not defined in this it is defined in the included model above.
-  -->
-
-  <xacro:if value="${use_sim_mode}">
+  <!-- A non-empty sim_file adds the simulation-only joint-state publisher. -->
+  <xacro:if value="${sim_file != ''}">
     <gazebo>
       <!--
       Define a 'JointStatePublisher' Gazebo plugin to report the states of the joints.
@@ -23,7 +20,11 @@
         <xacro:property name="js_topic"
                         value="${joint_state_publisher_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
+        <xacro:if value="${js_topic == ''}">
+          ${xacro.fatal(
+            "joint_state_publisher.topic is required when joint_state_publisher.enabled is true.")}
+        </xacro:if>
+
         <xacro:if value="${js_topic != ''}">
           <xacro:resolve_topic prop_id="resolved_js_topic"
                                topic="${js_topic}"
@@ -31,14 +32,14 @@
 
           <xacro:plugin_joint_state_publisher topic="${resolved_js_topic}">
             <joint_names>
-              <joint_name>${robot_prefix}${steerable_wheel_0_name}_steering_joint</joint_name>
-              <joint_name>${robot_prefix}${steerable_wheel_0_name}_rotation_joint</joint_name>
-              <joint_name>${robot_prefix}${steerable_wheel_1_name}_steering_joint</joint_name>
-              <joint_name>${robot_prefix}${steerable_wheel_1_name}_rotation_joint</joint_name>
-              <joint_name>${robot_prefix}${steerable_wheel_2_name}_steering_joint</joint_name>
-              <joint_name>${robot_prefix}${steerable_wheel_2_name}_rotation_joint</joint_name>
-              <joint_name>${robot_prefix}${steerable_wheel_3_name}_steering_joint</joint_name>
-              <joint_name>${robot_prefix}${steerable_wheel_3_name}_rotation_joint</joint_name>
+              <joint_name>${robot_prefix}${front_left_wheel_name}_steering_joint</joint_name>
+              <joint_name>${robot_prefix}${front_left_wheel_name}_rotation_joint</joint_name>
+              <joint_name>${robot_prefix}${front_right_wheel_name}_steering_joint</joint_name>
+              <joint_name>${robot_prefix}${front_right_wheel_name}_rotation_joint</joint_name>
+              <joint_name>${robot_prefix}${rear_left_wheel_name}_steering_joint</joint_name>
+              <joint_name>${robot_prefix}${rear_left_wheel_name}_rotation_joint</joint_name>
+              <joint_name>${robot_prefix}${rear_right_wheel_name}_steering_joint</joint_name>
+              <joint_name>${robot_prefix}${rear_right_wheel_name}_rotation_joint</joint_name>
             </joint_names>
           </xacro:plugin_joint_state_publisher>
         </xacro:if>

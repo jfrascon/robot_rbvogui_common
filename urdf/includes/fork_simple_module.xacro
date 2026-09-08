@@ -1,15 +1,10 @@
 <?xml version="1.0"?>
-<robot name="fork_module" xmlns:xacro="http://www.ros.org/wiki/xacro" xmlns:gz="http://gazebosim.org/schema">
+<robot name="robot_vog_forklift_module" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <!---->
-
-  <!--
-  Be aware that if a property is not defined in this it is defined in the included model above.
-  -->
-
-  <xacro:include filename="${robotics_description_pkg_dir}/urdf/sensors/all_sensors_macro.xacro"/>
-  <xacro:include filename="${robotics_description_pkg_dir}/urdf/extras/fork_simple/fork_simple_macro.xacro"/>
-  <xacro:include filename="${robotics_description_pkg_dir}/urdf/extras/fork_simple/generic_macros/plugin_fork_joint_f64_pos_pid_macro.xacro"/>
+  <!-- This module extends the common VOG platform with the forklift and its sensor layout. -->
+  <xacro:include filename="$(find robotics_description)/urdf/sensors/all_sensors_macro.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/extras/fork_simple/fork_simple_macro.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/extras/fork_simple/generic_macros/plugin_fork_joint_f64_pos_pid_macro.xacro"/>
 
   <!-- ===================================================================== -->
   <!-- ARGS -->
@@ -131,11 +126,6 @@
   <xacro:property name="fork_carriage_mount_x" value="${(0.5 * top_body_size_x) + 0.041}"/>
   <xacro:property name="fork_carriage_mount_y" value="0"/>
   <xacro:property name="fork_carriage_mount_z" value="${-ground_clearance + fork_rest_clearance}"/>
-  <xacro:property name="tine_size_x"           value="1.20"/>
-  <xacro:property name="tine_size_y"           value="0.12"/>
-  <xacro:property name="tine_size_z"           value="0.06"/>
-  <xacro:property name="tine_separation"       value="0.25"/>
-
   <xacro:fork_simple name="${fork_name}"
                      prefix="${robot_prefix}"
                      parent_frame="${robot_prefix}${base_name}_link"
@@ -198,7 +188,7 @@
   The root frame for the realsense_d435 camera is ${prefix}${name}_bottom_screw_frame.
   The frame of the mesh is located at its center.
   Sizes of the mesh are: (size_x = 0.025053 m, size_y = 0.089909 m, size_z = 0.025000 m)
-  The frame of the mesh is located, w.r.t ${prefix}${name}_bottom_screw_frame, at
+  The mesh frame is located relative to ${prefix}${name}_bottom_screw_frame at
   (x = 0.002375 m, y = 0 m, z = 0.0125 m, R = 0 rad, P = 0 rad, Y = 0 rad).
   The bottom face of the mesh is touching the root frame of the camera.
   Therefore
@@ -220,8 +210,8 @@
                              color="${fork_rgbd_color}"
                              use_c_mesh="${fork_rgbd_use_c_mesh}"
                              joint_parent_fr_root_fr="${fork_rgbd_mount_x} ${fork_rgbd_mount_y} ${fork_rgbd_mount_z} 0 0 0"
-                             use_sensor_frames_and_joints="${use_sim_mode}"
-                             sim_rgbd_enabled="${use_sim_mode and fork_camera_rgbd_sim_enabled}"
+                             use_sensor_frames_and_joints="True"
+                             sim_rgbd_enabled="${fork_camera_rgbd_sim_enabled}"
                              sim_rgbd_use_gravity="${fork_camera_rgbd_sim_use_gravity}"
                              sim_rgbd_always_on="${fork_camera_rgbd_sim_always_on}"
                              sim_rgbd_visualize="${fork_camera_rgbd_sim_visualize}"
@@ -241,7 +231,7 @@
                              sim_rgbd_distortion_k_p="${fork_camera_rgbd_sim_distortion_k_p}"
                              sim_rgbd_distortion_center="${fork_camera_rgbd_sim_distortion_center}"
                              sim_rgbd_gaussian_noise="${fork_camera_rgbd_sim_gaussian_noise}"
-                             sim_infra1_enabled="${use_sim_mode and fork_camera_infra1_sim_enabled}"
+                             sim_infra1_enabled="${fork_camera_infra1_sim_enabled}"
                              sim_infra1_use_gravity="${fork_camera_infra1_sim_use_gravity}"
                              sim_infra1_always_on="${fork_camera_infra1_sim_always_on}"
                              sim_infra1_visualize="${fork_camera_infra1_sim_visualize}"
@@ -260,7 +250,7 @@
                              sim_infra1_distortion_k_p="${fork_camera_infra1_sim_distortion_k_p}"
                              sim_infra1_distortion_center="${fork_camera_infra1_sim_distortion_center}"
                              sim_infra1_gaussian_noise="${fork_camera_infra1_sim_gaussian_noise}"
-                             sim_infra2_enabled="${use_sim_mode and fork_camera_infra2_sim_enabled}"
+                             sim_infra2_enabled="${fork_camera_infra2_sim_enabled}"
                              sim_infra2_use_gravity="${fork_camera_infra2_sim_use_gravity}"
                              sim_infra2_always_on="${fork_camera_infra2_sim_always_on}"
                              sim_infra2_visualize="${fork_camera_infra2_sim_visualize}"
@@ -353,7 +343,7 @@
       use_c_mesh="${front_top_lidar_use_c_mesh}"
       c_mesh_use_low_res="${front_top_lidar_c_mesh_use_low_res}"
       joint_parent_fr_root_fr="${front_top_lidar_joint_parent_fr_root_fr}"
-      sim_lidar_enabled="${use_sim_mode and front_top_lidar_sim_enabled}"
+      sim_lidar_enabled="${front_top_lidar_sim_enabled}"
       sim_lidar_always_on="${front_top_lidar_sim_always_on}"
       sim_lidar_visualize="${front_top_lidar_sim_visualize}"
       sim_lidar_update_rate="${front_top_lidar_sim_update_rate}"
@@ -363,7 +353,7 @@
       sim_lidar_ver_res_deg="${front_top_lidar_sim_ver_res_deg}"
       sim_lidar_dist_span="${front_top_lidar_sim_dist_span}"
       sim_lidar_gaussian_noise="${front_top_lidar_sim_gaussian_noise}"
-      sim_imu_enabled="${use_sim_mode and front_top_lidar_imu_sim_enabled}"
+      sim_imu_enabled="${front_top_lidar_imu_sim_enabled}"
       sim_imu_use_gravity="${front_top_lidar_imu_sim_use_gravity}"
       sim_imu_always_on="${front_top_lidar_imu_sim_always_on}"
       sim_imu_update_rate="${front_top_lidar_imu_sim_update_rate}"
@@ -421,16 +411,16 @@
     use_c_mesh="${front_bottom_lidar_use_c_mesh}"
     c_mesh_use_low_res="${front_bottom_lidar_c_mesh_use_low_res}"
     joint_parent_fr_root_fr="${front_bottom_lidar_joint_parent_fr_root_fr}"
-    sim_lidar_enabled="${use_sim_mode and front_bottom_lidar_sim_enabled}"
-    sim_lidar_always_on="${front_bottom_lidar_sim_always_on}"
-    sim_lidar_visualize="${front_bottom_lidar_sim_visualize}"
-    sim_lidar_update_rate="${front_bottom_lidar_sim_update_rate}"
-    sim_lidar_hor_fov_deg="${front_bottom_lidar_sim_hor_fov_deg}"
-    sim_lidar_hor_res_deg="${front_bottom_lidar_sim_hor_res_deg}"
-    sim_lidar_dist_span="${front_bottom_lidar_sim_dist_span}"
-    sim_lidar_gaussian_noise="${front_bottom_lidar_sim_gaussian_noise}"
+    sim_enabled="${front_bottom_lidar_sim_enabled}"
+    sim_always_on="${front_bottom_lidar_sim_always_on}"
+    sim_visualize="${front_bottom_lidar_sim_visualize}"
+    sim_update_rate="${front_bottom_lidar_sim_update_rate}"
+    sim_hor_fov_deg="${front_bottom_lidar_sim_hor_fov_deg}"
+    sim_hor_res_deg="${front_bottom_lidar_sim_hor_res_deg}"
+    sim_dist_span="${front_bottom_lidar_sim_dist_span}"
+    sim_gaussian_noise="${front_bottom_lidar_sim_gaussian_noise}"
     namespace="${robot_namespace}"
-    sim_lidar_topic="${front_bottom_lidar_sim_topic}"/>
+    sim_topic="${front_bottom_lidar_sim_topic}"/>
 
   <!-- ===================================================================== -->
   <!-- BACK TOP ROBOSENSE AIRY -->
@@ -497,7 +487,7 @@
       use_c_mesh="${back_top_lidar_use_c_mesh}"
       c_mesh_use_low_res="${back_top_lidar_c_mesh_use_low_res}"
       joint_parent_fr_root_fr="${back_top_lidar_joint_parent_fr_root_fr}"
-      sim_lidar_enabled="${use_sim_mode and back_top_lidar_sim_enabled}"
+      sim_lidar_enabled="${back_top_lidar_sim_enabled}"
       sim_lidar_always_on="${back_top_lidar_sim_always_on}"
       sim_lidar_visualize="${back_top_lidar_sim_visualize}"
       sim_lidar_update_rate="${back_top_lidar_sim_update_rate}"
@@ -507,7 +497,7 @@
       sim_lidar_ver_res_deg="${back_top_lidar_sim_ver_res_deg}"
       sim_lidar_dist_span="${back_top_lidar_sim_dist_span}"
       sim_lidar_gaussian_noise="${back_top_lidar_sim_gaussian_noise}"
-      sim_imu_enabled="${use_sim_mode and back_top_lidar_imu_sim_enabled}"
+      sim_imu_enabled="${back_top_lidar_imu_sim_enabled}"
       sim_imu_use_gravity="${back_top_lidar_imu_sim_use_gravity}"
       sim_imu_always_on="${back_top_lidar_imu_sim_always_on}"
       sim_imu_update_rate="${back_top_lidar_imu_sim_update_rate}"
@@ -522,7 +512,7 @@
       sim_lidar_base_topic="${back_top_lidar_sim_base_topic}"
       sim_imu_topic="${back_top_lidar_imu_sim_topic}"/>
 
-  <xacro:if value="${use_sim_mode}">
+  <xacro:if value="${sim_file != ''}">
     <gazebo>
       <!--
       Define a 'JointPositionController' Gazebo plugin to control the
@@ -535,6 +525,10 @@
 
       <xacro:if value="${fork_controller_sim_cfg.get('enabled', False)}">
         <xacro:property name="fork_topic" value="${fork_controller_sim_cfg.get('topic', '')}"/>
+
+        <xacro:if value="${fork_topic == ''}">
+          ${xacro.fatal("fork_controller.topic is required when fork_controller.enabled is true.")}
+        </xacro:if>
 
         <xacro:if value="${fork_topic != ''}">
           <xacro:plugin_fork_joint_f64_pos_pid

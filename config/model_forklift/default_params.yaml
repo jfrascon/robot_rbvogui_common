@@ -1,6 +1,5 @@
 /**/robot_state_publisher:
   ros__parameters:
-    use_sim_time: $(var use_sim_time)
     publish_frequency: 20.0
     ignore_timestamp: false # If True joint_state messages are accepted, no matter their timestamp
     # PARAMETER `ROBOT_DESCRIPTION` IS MANAGED IN THE LAUNCH FILE, NOT HERE.
@@ -8,21 +7,18 @@
     # PARAMETER `FRAME_PREFIX` IS ALWAYS USED AS AN EMPTY STRING IN THE LAUNCH FILE; ROBOT_PREFIX
     #    IS MANAGED IN THE LAUNCH FILE.
 
-/**/bridge:
+/**/ros_gz_bridge:
   ros__parameters:
-    use_sim_time: $(var use_sim_time)
     subscription_heartbeat: 1000
     # PARAMETER `CONFIG_FILE` IS MANAGED IN THE LAUNCH FILE; NOT HERE.
     expand_gz_topic_names: true
     override_timestamps_with_wall_time: false
     override_frame_id: ""
 
-/**/fork_position_controller_server:
+/**/joint_position_controller_server:
   ros__parameters:
-    use_sim_time: $(var use_sim_time)
-
     # These limits must match the fork joint limits configured in the robot xacro/URDF.
-    lower_limit: 0
+    lower_limit: 0.0
     upper_limit: 0.2
 
     # Goal succeeds when the measured position is within this absolute tolerance from the target.
@@ -53,10 +49,9 @@
     # JointState topic used to read the measured fork position.
     joint_states_topic: joint_states
 
-# Used in a real deployment (use_sim_time = False)
-/**/fork_serial:
+# The serial driver starts only on a real robot. Simulation provides the fork state separately.
+/**/prismatic_joint_position_serial_driver:
   ros__parameters:
-    use_sim_time: $(var use_sim_time)
     port: /dev/ttyACM0
     baudrate: 9600
     data_bits: 8
@@ -76,7 +71,6 @@
 
 /**/four_swerve_kinematics:
   ros__parameters:
-    use_sim_time: $(var use_sim_time)
     # Why this parameter exists:
     # Inverse kinematics can have more than one valid solution.
     # To choose the best one, the node needs the current wheel states from the last received
@@ -115,14 +109,14 @@
         dist: 0.4366337137693332
         alpha: 0.5683101050173379 # rad
         beta: 1.0024862217775588 # rad = pi/2 - alpha_0
-        name: "$(var robot_prefix)steerable_wheel_0"
+        name: "$(var robot_prefix)front_left_wheel"
         steering_joint:
-          name: "$(var robot_prefix)steerable_wheel_0_steering_joint"
-          # Note: If you want the wheel to be able to reach +-pi rad angle (+-180 degrees), set limits to +-3.1416.
-          # pi = 3.141592654.... < 3.1416
+          name: "$(var robot_prefix)front_left_wheel_steering_joint"
+          # Use +/-3.1416 radians to let the wheel reach +/-pi radians (+/-180 degrees).
+          # This value is slightly greater than pi, so the limit does not stop the wheel early.
           limits: {lower: -3.1416, upper: 3.1416}   # rad
         rotation_joint:
-          name: "$(var robot_prefix)steerable_wheel_0_rotation_joint"
+          name: "$(var robot_prefix)front_left_wheel_rotation_joint"
           limits: {lower: -100.0, upper: 100.0}   # rad/s
 
       steerable_wheel_1:
@@ -130,14 +124,14 @@
         dist: 0.4366337137693332
         alpha: -0.5683101050173379 # rad
         beta: 2.1391064318122344 # rad = pi/2 - alpha_1
-        name: "$(var robot_prefix)steerable_wheel_1"
+        name: "$(var robot_prefix)front_right_wheel"
         steering_joint:
-          name: "$(var robot_prefix)steerable_wheel_1_steering_joint"
-          # Note: If you want the wheel to be able to reach +-pi rad angle (+-180 degrees), set limits to +-3.1416.
-          # pi = 3.141592654.... < 3.1416
+          name: "$(var robot_prefix)front_right_wheel_steering_joint"
+          # Use +/-3.1416 radians to let the wheel reach +/-pi radians (+/-180 degrees).
+          # This value is slightly greater than pi, so the limit does not stop the wheel early.
           limits: {lower: -3.1416, upper: 3.1416}   # rad
         rotation_joint:
-          name: "$(var robot_prefix)steerable_wheel_1_rotation_joint"
+          name: "$(var robot_prefix)front_right_wheel_rotation_joint"
           limits: {lower: -100.0, upper: 100.0}   # rad/s
 
       steerable_wheel_2:
@@ -145,14 +139,14 @@
         dist: 0.4366337137693332
         alpha: 2.5732825485724553 # rad
         beta: -1.0024862217775588 # rad = pi/2 - alpha_2
-        name: "$(var robot_prefix)steerable_wheel_2"
+        name: "$(var robot_prefix)rear_left_wheel"
         steering_joint:
-          name: "$(var robot_prefix)steerable_wheel_2_steering_joint"
-          # Note: If you want the wheel to be able to reach +-pi rad angle (+-180 degrees), set limits to +-3.1416.
-          # pi = 3.141592654.... < 3.1416
+          name: "$(var robot_prefix)rear_left_wheel_steering_joint"
+          # Use +/-3.1416 radians to let the wheel reach +/-pi radians (+/-180 degrees).
+          # This value is slightly greater than pi, so the limit does not stop the wheel early.
           limits: {lower: -3.1416, upper: 3.1416}   # rad
         rotation_joint:
-          name: "$(var robot_prefix)steerable_wheel_2_rotation_joint"
+          name: "$(var robot_prefix)rear_left_wheel_rotation_joint"
           limits: {lower: -100.0, upper: 100.0}   # rad/s
 
       steerable_wheel_3:
@@ -160,12 +154,12 @@
         dist: 0.4366337137693332
         alpha: -2.5732825485724553 # rad
         beta: 4.144078875367352 # rad = pi/2 - alpha_3
-        name: "$(var robot_prefix)steerable_wheel_3"
+        name: "$(var robot_prefix)rear_right_wheel"
         steering_joint:
-          name: "$(var robot_prefix)steerable_wheel_3_steering_joint"
-          # Note: If you want the wheel to be able to reach +-pi rad angle (+-180 degrees), set limits to +-3.1416.
-          # pi = 3.141592654.... < 3.1416
+          name: "$(var robot_prefix)rear_right_wheel_steering_joint"
+          # Use +/-3.1416 radians to let the wheel reach +/-pi radians (+/-180 degrees).
+          # This value is slightly greater than pi, so the limit does not stop the wheel early.
           limits: {lower: -3.1416, upper: 3.1416}   # rad
         rotation_joint:
-          name: "$(var robot_prefix)steerable_wheel_3_rotation_joint"
+          name: "$(var robot_prefix)rear_right_wheel_rotation_joint"
           limits: {lower: -100.0, upper: 100.0}   # rad/s

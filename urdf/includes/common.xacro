@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
-<robot name="robot_vog_common" xmlns:xacro="http://www.ros.org/wiki/xacro" xmlns:gz="http://gazebosim.org/schema">
+<robot name="robot_vog_common" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!--
   Common xacro file for the VOG robot with 4 steerable wheels.
   THIS FILE IS NOT A COMPLETE ROBOT MODEL, IT IS MEANT TO BE INCLUDED IN THE SPECIFIC ROBOT MODEL
   XACRO FILES (FOR EXAMPLE, MODEL_BASE.XACRO AND MODEL_FORKLIFT.XACRO).
 
   The base is composed of the chassis body and four steerable wheels:
-  - Steerable wheel 0: front left wheel uses angle +alpha.
+  - Front-left wheel uses angle +alpha.
     (x_0 = d*cos(+alpha), y_0 = d*sin(+alpha))
-  - Steerable wheel 1: front right wheel uses angle -alpha.
+  - Front-right wheel uses angle -alpha.
     (x_0, -y_0)
-  - Steerable wheel 2: back left wheel uses angle 180 - alpha.
+  - Rear-left wheel uses angle 180 - alpha.
     (-x_0, y_0)
-  - Steerable wheel 3: back right wheel uses angle -180 + alpha.
+  - Rear-right wheel uses angle -180 + alpha.
     (-x_0, -y_0)
   Reference: package://ground_vehicle_kinematics/doc/kinematics_en.pdf
 
@@ -27,28 +27,18 @@
   The base_link is always placed at the center of the bottom face of the chassis.
   -->
 
-  <xacro:property name="robot_vog_pkg_dir" value="$(find robot_vog)"/>
-  <xacro:property name="robotics_description_pkg_dir" value="$(find robotics_description)"/>
-
   <!-- ===================================================================== -->
   <!-- INCLUDES -->
   <!-- ===================================================================== -->
 
-  <xacro:include filename="${robotics_description_pkg_dir}/urdf/common/all_commons.xacro"/>
-  <xacro:include filename="${robotics_description_pkg_dir}/urdf/wheels/all_wheels.xacro"/>
-  <xacro:include filename="${robotics_description_pkg_dir}/urdf/wheels/generic_macros/all_wheels_plugins.xacro"/>
-  <xacro:include filename="${robotics_description_pkg_dir}/urdf/gz_system_plugins/all_gz_system_plugins.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/common/all_commons.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/wheels/all_wheels.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/wheels/generic_macros/all_wheels_plugins.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/gz_system_plugins/all_gz_system_plugins.xacro"/>
 
   <!-- ===================================================================== -->
   <!-- ARGS -->
   <!-- ===================================================================== -->
-  <!--
-  When the xacro file is used in a real deployment, use_sim_mode should be set to False, therefore
-  simulation plugins are not loaded.
-  When the xacro file is used in simulation, use_sim_mode should be set to True, so the simulation
-  plugins are loaded.
-  -->
-  <xacro:arg name="use_sim_mode" default="False"/>
   <xacro:arg name="namespace"    default=""/>
   <xacro:arg name="robot_name"   default="vog"/>
   <!--
@@ -57,23 +47,21 @@
   -->
   <xacro:arg name="sim_file" default=""/>
 
-  <xacro:arg name="body_color"           default="0.5 0.5 0.5 1.0"/>
-  <xacro:arg name="body_use_inertial"    default="True"/>
-  <xacro:arg name="s_wheel_use_v_mesh"   default="True"/>
-  <xacro:arg name="s_wheel_color"        default="0.1 0.1 0.1 1.0"/>
-  <xacro:arg name="s_wheel_use_inertial" default="True"/>
+  <xacro:arg name="body_color"             default="0.5 0.5 0.5 1.0"/>
+  <xacro:arg name="body_use_visual"        default="True"/>
+  <xacro:arg name="body_use_collision"     default="True"/>
+  <xacro:arg name="body_use_inertial"      default="True"/>
+  <xacro:arg name="s_wheel_use_visual"     default="True"/>
+  <xacro:arg name="s_wheel_use_v_mesh"     default="True"/>
+  <xacro:arg name="s_wheel_color"          default="0.1 0.1 0.1 1.0"/>
+  <xacro:arg name="s_wheel_use_inertial"   default="True"/>
 
   <!--
-  Note: If you want the wheel to be able to reach +-pi rad angle (+-180 degress), set limits to
+  To let a wheel reach +/-pi radians (+/-180 degrees), set the limits to
   +-3.1416 (slightly above pi).
   -->
   <xacro:arg name="s_wheel_steering_joint_limits" default="-3.1416 3.1416 100.0 100000.0"/>
   <xacro:arg name="s_wheel_rotation_joint_limits" default="100.0 100000.0"/>
-  <xacro:arg name="s_wheel_max_contacts"          default="1"/>
-  <xacro:arg name="s_wheel_mu"                    default="0.05"/>
-  <xacro:arg name="s_wheel_mu2"                   default="0.5"/>
-  <xacro:arg name="s_wheel_slip1"                 default="0.005"/>
-  <xacro:arg name="s_wheel_slip2"                 default="0.0005"/>
 
   <!-- ===================================================================== -->
   <!-- DEFINITION OF PROPERTIES -->
@@ -81,7 +69,6 @@
 
   <!-- Create properties from args for easy manipulation. -->
 
-  <xacro:property name="use_sim_mode" value="$(arg use_sim_mode)"/>
   <xacro:property name="namespace"    value="$(arg namespace)"/>
   <xacro:property name="robot_name"   value="$(arg robot_name)"/>
 
@@ -91,16 +78,11 @@
   <!-- Set the property 'robot_prefix' -->
   <xacro:make_prefix prop_id="robot_prefix" name="${robot_name}"/>
 
-  <!--
-  If use_sim_mode is False (working in a real deployment), do not load the simulation configuration from the
-  simulation file.
-  If use_sim_mode is True (working in simulation mode), and a configuration file is provided, load the simulation
-  configuration from the file. If no configuration file is provided, use an empty configuration, so no gz-plugins are
-  loaded.
-  -->
-  <xacro:property name="sim_file" value="$(arg sim_file)"/>
+  <!-- An empty or whitespace-only path selects the real-robot description. -->
+  <xacro:property name="sim_file_raw" value="$(arg sim_file)"/>
+  <xacro:property name="sim_file"     value="${str(sim_file_raw).strip()}"/>
   <xacro:property name="sim_cfg"
-                  value="${xacro.load_yaml(sim_file) if use_sim_mode and sim_file != '' else dict()}"/>
+                  value="${xacro.load_yaml(sim_file) if sim_file != '' else dict()}"/>
 
   <!--
   The body geometry is fixed in this common file.
@@ -109,11 +91,13 @@
   <xacro:property name="body_color"        value="$(arg body_color)"/>
   <xacro:property name="body_color_values" value="${body_color.split()}"/>
 
-  <xacro:if value="${body_color != '' and len(body_color_values) != 4}">
+  <xacro:if value="${len(body_color_values) != 4}">
     ${xacro.fatal("xacro arg body_color must contain exactly 4 values: r g b a")}
   </xacro:if>
 
-  <xacro:property name="body_use_inertial" value="$(arg body_use_inertial)"/>
+  <xacro:property name="body_use_visual"    value="$(arg body_use_visual)"/>
+  <xacro:property name="body_use_collision" value="$(arg body_use_collision)"/>
+  <xacro:property name="body_use_inertial"  value="$(arg body_use_inertial)"/>
 
   <xacro:property name="top_body_size_x"    value="1.044"/>
   <xacro:property name="top_body_size_y"    value="0.650"/>
@@ -127,6 +111,7 @@
   <xacro:property name="dist_to_wheels"     value="0.4366337137693332"/>
   <xacro:property name="alpha_deg"          value="32.56180140948635"/>
 
+  <xacro:property name="s_wheel_use_visual"   value="$(arg s_wheel_use_visual)"/>
   <xacro:property name="s_wheel_use_v_mesh"   value="$(arg s_wheel_use_v_mesh)"/>
   <xacro:property name="s_wheel_color"        value="$(arg s_wheel_color)"/>
   <xacro:property name="s_wheel_color_values" value="${s_wheel_color.split()}"/>
@@ -180,41 +165,35 @@
 
   <!--
   Important:
-  The motion of this robot is controlled in velocity mode by a plugin of type 'gz::sim::systems::VelocityControl'.
-  Each wheel is not commanded directly through torque/force or velocity commands.
-  Therefore, accurate values for the friction parameters of the wheel are not required (mu, mu2, slip1, slip2), just
-  values that provide low friction to minimize the interaction of the wheels with the ground and allow the robot to move
-  smoothly
-  Besides, the velocity limit and effort limit for the steering and rotation joints are set to such a high values that
-  they model ideal joints.
-  This is useful when the robot is controlled in velocity mode, to avoid the joint limits from interfering
-  with the control.
+  The `gz::sim::systems::VelocityControl` plugin applies chassis motion directly. The wheel-joint
+  controllers animate the wheels but wheel-ground forces do not drive the chassis. Consequently,
+  the contact parameters (`mu`, `mu2`, `slip1` and `slip2`) are not used to reproduce drivetrain
+  dynamics; they are configured with low values to minimize unwanted resistance.
+  The velocity and effort limits for the steering and rotation joints are intentionally high so
+  that they approximate ideal joints.
+  This prevents the joint limits from interfering when the robot is controlled in velocity mode.
   Read the macro 'steerable_wheel_macro.xacro' for more details about these limit parameters.
   -->
 
-  <xacro:property name="s_wheel_max_contacts" value="$(arg s_wheel_max_contacts)"/>
-  <xacro:property name="s_wheel_mu"           value="$(arg s_wheel_mu)"/>
-  <xacro:property name="s_wheel_mu2"          value="$(arg s_wheel_mu2)"/>
-  <xacro:property name="s_wheel_slip1"        value="$(arg s_wheel_slip1)"/>
-  <xacro:property name="s_wheel_slip2"        value="$(arg s_wheel_slip2)"/>
 
   <!--
-  It is required that the frame of the wheel mesh is centered at its geometric center, and oriented
-  in a such way that Z+ is the axis of symmetry of the wheel, i.e, like if the wheel is laying
-  on the ground, Z+ would be vertical, X+ would point forward and Y+ would point to the left.
+  The wheel mesh frame must be centered at its geometric center and oriented with Z+ as the
+  symmetry axis. With the wheel lying on the ground, Z+ is vertical, X+ points forward and Y+
+  points left.
   The wheel mesh path is fixed in this common file.
-  The only public wheel visual choice is whether to use that built-in mesh or to use the primitive
-  cylinder visual instead.
+  `s_wheel_use_visual` controls whether the wheel has a visual element. When enabled,
+  `s_wheel_use_v_mesh` selects the built-in mesh or the primitive cylinder.
   When the built-in mesh is used, the mesh must follow the convention described below.
   The macro of the steerable wheel will rotate that geometry +90 degrees around the x-axis.
-  Wheel always use collision elements, which means 's_wheel_use_collision' is always True.
-  Wheel always use a basic geometry for collision, which means 's_wheel_use_c_mesh' is always False.
+  Wheel collisions always use the primitive cylinder defined by the `steerable_wheel` macro;
+  this model does not expose collision-geometry options.
   Read the steerable_wheel macro for more details.
   -->
   <xacro:property name="s_wheel_mesh"
                   value="${'robotics_description/meshes/wheels/standard_wheels/rubber_wheel_2.stl' if s_wheel_use_v_mesh else ''}"/>
   <xacro:property name="s_wheel_mesh_scale"          value="1.0 1.0 1.0"/>
-  <xacro:property name="s_wheel_radius"              value="0.1175"/>
+  <!-- Keep this radius identical to the value configured for ground_vehicle_kinematics. -->
+  <xacro:property name="s_wheel_radius"              value="0.117494"/>
   <xacro:property name="s_wheel_thickness"           value="0.142462"/>
   <xacro:property name="s_wheel_mass"                value="7.5"/>
   <xacro:property name="s_wheel_steering_joint_type" value="revolute"/>
@@ -222,17 +201,19 @@
 
   <!-- Names for components -->
   <xacro:property name="base_name"              value="base"/>
-  <xacro:property name="steerable_wheel_0_name" value="steerable_wheel_0"/>
-  <xacro:property name="steerable_wheel_1_name" value="steerable_wheel_1"/>
-  <xacro:property name="steerable_wheel_2_name" value="steerable_wheel_2"/>
-  <xacro:property name="steerable_wheel_3_name" value="steerable_wheel_3"/>
+  <xacro:property name="front_left_wheel_name"  value="front_left_wheel"/>
+  <xacro:property name="front_right_wheel_name" value="front_right_wheel"/>
+  <xacro:property name="rear_left_wheel_name"   value="rear_left_wheel"/>
+  <xacro:property name="rear_right_wheel_name"  value="rear_right_wheel"/>
+  <xacro:property name="body_visual_color"
+                  value="${robot_prefix + base_name + '_color ' + body_color}"/>
 
   <!-- ===================================================================== -->
   <!-- Definition of links and joints for the rectangular base -->
   <!-- ===================================================================== -->
 
   <!--
-  The link '${base_name}footprint_link' is located on the ground, just below the link
+  The link '${base_name}_footprint_link' is located on the ground, just below the link
   '${base_name}_link'.
   -->
   <link name="${robot_prefix}${base_name}_footprint_link"/>
@@ -245,38 +226,24 @@
     <parent link="${robot_prefix}${base_name}_footprint_link"/>
     <child link="${robot_prefix}${base_name}_link"/>
     <!--
-    The link '${base_name}_link' is located at the center of the bottom face of the lower body, so it is
-    at a height of `ground_clearance` meters above the link '${base_name}_footprint_link'.
+    The origin of '${base_name}_footprint_link' is the ground projection of the robot base.
+    The origin of '${base_name}_link' is at the center of the lower body's bottom face, which is
+    `ground_clearance` meters above the footprint origin.
+    The fixed joint has zero rotation, so both frames use the same X, Y and Z axis directions.
     -->
     <origin rpy="0 0 0" xyz="0 0 ${ground_clearance}"/>
   </joint>
 
   <link name="${robot_prefix}${base_name}_top_link">
-    <visual>
-      <geometry>
-        <box size="${top_body_size_x} ${top_body_size_y} ${top_body_size_z}"/>
-      </geometry>
-      <!--
-      The body is modeled as a box centered at its geometric center.
-      By placing the box origin at z = 0.5 * top_body_size_z, the link
-      `${robot_prefix}${base_name}_link` remains at the center of the bottom face of the body.
-      -->
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <material name="${robot_prefix}${base_name}_color">
-        <color rgba="${body_color}"/>
-      </material>
-    </visual>
+    <xacro:if value="${body_use_visual}">
+      <xacro:visual_box
+        size="${top_body_size_x} ${top_body_size_y} ${top_body_size_z}"
+        color="${body_visual_color}"/>
+    </xacro:if>
 
-    <collision>
-      <geometry>
-        <box size="${top_body_size_x} ${top_body_size_y} ${top_body_size_z}"/>
-      </geometry>
-      <!--
-      The collision body uses the same box and the same origin as the visual body.
-      This keeps the body link frame at the center of the bottom face of the body.
-      -->
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-    </collision>
+    <xacro:if value="${body_use_collision}">
+      <xacro:collision_box size="${top_body_size_x} ${top_body_size_y} ${top_body_size_z}"/>
+    </xacro:if>
 
     <xacro:if value="${body_use_inertial}">
       <xacro:solid_box_inertia mass="${top_body_mass}"
@@ -293,10 +260,11 @@
     <parent link="${robot_prefix}${base_name}_link"/>
     <child link="${robot_prefix}${base_name}_top_link"/>
     <!--
-    The link '${base_name}_link' is located at the center of the bottom face of the body, so it is
-    at a height of `ground_clearance + bottom_body_size_z` meters above the link
-    '${base_name}_footprint_link'.
-    The belly is always present in this model, so `bottom_body_size_z` is always part of that offset.
+    The origin of '${base_name}_top_link' is at the geometric center of the upper body.
+    Starting at '${base_name}_link', the offset moves through the complete lower-body height and
+    then through half of the upper-body height.
+    The lower body is always present, so `bottom_body_size_z` is always part of this offset.
+    The fixed joint has zero rotation, so the upper-body frame keeps the base frame orientation.
     -->
     <origin rpy="0 0 0" xyz="0 0 ${bottom_body_size_z + (0.5 * top_body_size_z)}"/>
   </joint>
@@ -307,22 +275,15 @@
   The belly inertia is enabled only when `body_use_inertial` is enabled.
   -->
   <link name="${robot_prefix}${base_name}_bottom_link">
-    <visual>
-      <geometry>
-        <box size="${bottom_body_size_x} ${bottom_body_size_y} ${bottom_body_size_z}"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <material name="${robot_prefix}${base_name}_color">
-        <color rgba="${body_color}"/>
-      </material>
-    </visual>
+    <xacro:if value="${body_use_visual}">
+      <xacro:visual_box
+        size="${bottom_body_size_x} ${bottom_body_size_y} ${bottom_body_size_z}"
+        color="${body_visual_color}"/>
+    </xacro:if>
 
-    <collision>
-      <geometry>
-        <box size="${bottom_body_size_x} ${bottom_body_size_y} ${bottom_body_size_z}"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-    </collision>
+    <xacro:if value="${body_use_collision}">
+      <xacro:collision_box size="${bottom_body_size_x} ${bottom_body_size_y} ${bottom_body_size_z}"/>
+    </xacro:if>
 
     <xacro:if value="${body_use_inertial}">
       <xacro:solid_box_inertia mass="${bottom_body_mass}"
@@ -345,7 +306,7 @@
   Definition of the steerable wheels.
   -->
 
-  <!-- z-coordinate of each steerable wheel w.r.t it parent frame -->
+  <!-- Z coordinate of each steerable wheel relative to its parent frame. -->
   <xacro:property name="z_s_wheel" value="${-ground_clearance + s_wheel_radius}"/>
   <xacro:property name="d"         value="${float(dist_to_wheels)}"/>
   <xacro:property name="alpha"     value="${radians(float(alpha_deg))}"/>
@@ -365,11 +326,15 @@
   -->
 
   <!-- Front left wheel: (x_0, y_0) -->
+  <xacro:property name="front_left_wheel_sim_cfg"
+                  value="${sim_cfg.get('front_left_wheel', dict())}"/>
+  <xacro:set_props_wheel_sim prop_prefix="front_left_wheel_sim"
+                             sim_cfg="${front_left_wheel_sim_cfg}"/>
   <xacro:steerable_wheel
-    name="${steerable_wheel_0_name}"
+    name="${front_left_wheel_name}"
     prefix="${robot_prefix}"
     parent_frame="${robot_prefix}${base_name}_link"
-    use_visual="True"
+    use_visual="${s_wheel_use_visual}"
     use_inertial="${s_wheel_use_inertial}"
     v_mesh="${s_wheel_mesh}"
     v_mesh_scale="${s_wheel_mesh_scale}"
@@ -381,19 +346,24 @@
     steering_joint_limits="${s_wheel_steering_joint_limits}"
     rotation_joint_type="${s_wheel_rotation_joint_type}"
     rotation_joint_limits="${s_wheel_rotation_joint_limits}"
-    max_contacts="${s_wheel_max_contacts}"
-    mu="${s_wheel_mu}"
-    mu2="${s_wheel_mu2}"
-    slip1="${s_wheel_slip1}"
-    slip2="${s_wheel_slip2}"
+    sim_enabled="${front_left_wheel_sim_enabled}"
+    sim_max_contacts="${front_left_wheel_sim_max_contacts}"
+    sim_mu="${front_left_wheel_sim_mu}"
+    sim_mu2="${front_left_wheel_sim_mu2}"
+    sim_slip1="${front_left_wheel_sim_slip1}"
+    sim_slip2="${front_left_wheel_sim_slip2}"
     joint_parent_fr_wheel_fr="${x_0} ${y_0} ${z_s_wheel} 0.0 0.0 0.0"/>
 
   <!-- Front right wheel: (x_0, -y_0) -->
+  <xacro:property name="front_right_wheel_sim_cfg"
+                  value="${sim_cfg.get('front_right_wheel', dict())}"/>
+  <xacro:set_props_wheel_sim prop_prefix="front_right_wheel_sim"
+                             sim_cfg="${front_right_wheel_sim_cfg}"/>
   <xacro:steerable_wheel
-    name="${steerable_wheel_1_name}"
+    name="${front_right_wheel_name}"
     prefix="${robot_prefix}"
     parent_frame="${robot_prefix}${base_name}_link"
-    use_visual="True"
+    use_visual="${s_wheel_use_visual}"
     use_inertial="${s_wheel_use_inertial}"
     v_mesh="${s_wheel_mesh}"
     v_mesh_scale="${s_wheel_mesh_scale}"
@@ -405,19 +375,24 @@
     steering_joint_limits="${s_wheel_steering_joint_limits}"
     rotation_joint_type="${s_wheel_rotation_joint_type}"
     rotation_joint_limits="${s_wheel_rotation_joint_limits}"
-    max_contacts="${s_wheel_max_contacts}"
-    mu="${s_wheel_mu}"
-    mu2="${s_wheel_mu2}"
-    slip1="${s_wheel_slip1}"
-    slip2="${s_wheel_slip2}"
+    sim_enabled="${front_right_wheel_sim_enabled}"
+    sim_max_contacts="${front_right_wheel_sim_max_contacts}"
+    sim_mu="${front_right_wheel_sim_mu}"
+    sim_mu2="${front_right_wheel_sim_mu2}"
+    sim_slip1="${front_right_wheel_sim_slip1}"
+    sim_slip2="${front_right_wheel_sim_slip2}"
     joint_parent_fr_wheel_fr="${x_0} ${-y_0} ${z_s_wheel} 0.0 0.0 0.0"/>
 
-  <!-- Back left wheel: (-x_0, y_0) -->
+  <!-- Rear left wheel: (-x_0, y_0) -->
+  <xacro:property name="rear_left_wheel_sim_cfg"
+                  value="${sim_cfg.get('rear_left_wheel', dict())}"/>
+  <xacro:set_props_wheel_sim prop_prefix="rear_left_wheel_sim"
+                             sim_cfg="${rear_left_wheel_sim_cfg}"/>
   <xacro:steerable_wheel
-    name="${steerable_wheel_2_name}"
+    name="${rear_left_wheel_name}"
     prefix="${robot_prefix}"
     parent_frame="${robot_prefix}${base_name}_link"
-    use_visual="True"
+    use_visual="${s_wheel_use_visual}"
     use_inertial="${s_wheel_use_inertial}"
     v_mesh="${s_wheel_mesh}"
     v_mesh_scale="${s_wheel_mesh_scale}"
@@ -429,19 +404,24 @@
     steering_joint_limits="${s_wheel_steering_joint_limits}"
     rotation_joint_type="${s_wheel_rotation_joint_type}"
     rotation_joint_limits="${s_wheel_rotation_joint_limits}"
-    max_contacts="${s_wheel_max_contacts}"
-    mu="${s_wheel_mu}"
-    mu2="${s_wheel_mu2}"
-    slip1="${s_wheel_slip1}"
-    slip2="${s_wheel_slip2}"
+    sim_enabled="${rear_left_wheel_sim_enabled}"
+    sim_max_contacts="${rear_left_wheel_sim_max_contacts}"
+    sim_mu="${rear_left_wheel_sim_mu}"
+    sim_mu2="${rear_left_wheel_sim_mu2}"
+    sim_slip1="${rear_left_wheel_sim_slip1}"
+    sim_slip2="${rear_left_wheel_sim_slip2}"
     joint_parent_fr_wheel_fr="${-x_0} ${y_0} ${z_s_wheel} 0.0 0.0 0.0"/>
 
-  <!-- Back right wheel: (-x_0, -y_0) -->
+  <!-- Rear right wheel: (-x_0, -y_0) -->
+  <xacro:property name="rear_right_wheel_sim_cfg"
+                  value="${sim_cfg.get('rear_right_wheel', dict())}"/>
+  <xacro:set_props_wheel_sim prop_prefix="rear_right_wheel_sim"
+                             sim_cfg="${rear_right_wheel_sim_cfg}"/>
   <xacro:steerable_wheel
-    name="${steerable_wheel_3_name}"
+    name="${rear_right_wheel_name}"
     prefix="${robot_prefix}"
     parent_frame="${robot_prefix}${base_name}_link"
-    use_visual="True"
+    use_visual="${s_wheel_use_visual}"
     use_inertial="${s_wheel_use_inertial}"
     v_mesh="${s_wheel_mesh}"
     v_mesh_scale="${s_wheel_mesh_scale}"
@@ -453,18 +433,19 @@
     steering_joint_limits="${s_wheel_steering_joint_limits}"
     rotation_joint_type="${s_wheel_rotation_joint_type}"
     rotation_joint_limits="${s_wheel_rotation_joint_limits}"
-    max_contacts="${s_wheel_max_contacts}"
-    mu="${s_wheel_mu}"
-    mu2="${s_wheel_mu2}"
-    slip1="${s_wheel_slip1}"
-    slip2="${s_wheel_slip2}"
+    sim_enabled="${rear_right_wheel_sim_enabled}"
+    sim_max_contacts="${rear_right_wheel_sim_max_contacts}"
+    sim_mu="${rear_right_wheel_sim_mu}"
+    sim_mu2="${rear_right_wheel_sim_mu2}"
+    sim_slip1="${rear_right_wheel_sim_slip1}"
+    sim_slip2="${rear_right_wheel_sim_slip2}"
     joint_parent_fr_wheel_fr="${-x_0} ${-y_0} ${z_s_wheel} 0.0 0.0 0.0"/>
 
   <!-- ===================================================================== -->
   <!-- PLUGINS FOR THE BASE -->
   <!-- ===================================================================== -->
 
-  <xacro:if value="${use_sim_mode}">
+  <xacro:if value="${sim_file != ''}">
     <gazebo>
       <!--
       To find the reference for the system Gazebo plugins:
@@ -478,24 +459,28 @@
       -->
 
       <!--
-      Insert a the `VelocityControl` Gazebo plugin to control the robot's motion by applying the twist received on a
-      message in a subscribed topic.
-      The twist is applied directly to the robot's model in Gazebo, without simulating the effect of forces on the
+      Insert the `VelocityControl` Gazebo plugin to control robot motion by applying the twist
+      received from its subscribed topic.
+      The twist is applied directly to the robot's model in Gazebo without simulating forces on the
       wheels or the ground.
-      This allows for a simple and stable way to control the robot's motion in velocity mode, without the need to tune
-      friction parameters or worry about wheel slip.
+      This provides stable velocity control without tuning friction parameters or modelling wheel
+      slip.
       -->
       <xacro:property name="base_velocity_controller_sim_cfg"
         value="${sim_cfg.get('base_velocity_controller', dict())}"/>
 
       <xacro:if value="${base_velocity_controller_sim_cfg.get('enabled', False)}">
         <!--
-        Preppend the prefix `bvc_` to all the properties related to the (b)ase (v)elocity
+        Prepend the prefix `bvc_` to all properties related to the (b)ase (v)elocity
         (c)ontroller Gazebo plugin, to avoid name conflicts with other Gazebo plugins.
         -->
         <xacro:property name="bvc_topic" value="${base_velocity_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- If the topic is empty, then the plugin is not loaded. -->
+        <xacro:if value="${bvc_topic == ''}">
+          ${xacro.fatal(
+            "base_velocity_controller.topic is required when base_velocity_controller.enabled is true.")}
+        </xacro:if>
+
         <xacro:if value="${bvc_topic != ''}">
           <xacro:resolve_topic prop_id="bvc_resolved_topic"
             topic="${bvc_topic}"
@@ -515,71 +500,84 @@
       </xacro:if>
 
       <!--
-      Insert the `OdometryPublisher` Gazebo plugin to publish true pose of the robot's w.r.t a selected fixed frame in
-      Gazebo.
-      IMPORTANT: The fixed frame does not need to be the world frame of Gazebo, it can be any pose (position +
-      orientation) in Gazebo. For this goal you use the fields ....
-      More details about this plugin in package://robotics_description/urdf/gz_system_plugins/plugin_odometry_publisher_macro.xacro
+      Publish the pose of the robot base with respect to a configured reference frame.
+      More details are available in
+      package://robotics_description/urdf/gz_system_plugins/plugin_pose_publisher_in_reference_frame_macro.xacro.
       -->
-      <xacro:property name="base_pose_ground_truth_publisher_sim_cfg"
-        value="${sim_cfg.get('base_pose_ground_truth_publisher', dict())}"/>
+      <xacro:property name="pose_publisher_sim_cfg"
+                      value="${sim_cfg.get('pose_publisher', dict())}"/>
 
-      <xacro:if value="${base_pose_ground_truth_publisher_sim_cfg.get('enabled', False)}">
-        <!--
-        Preppend the prefix `bpgtp_` to all the properties related to the (b)ase (p)ose (g)round
-        (t)ruth (p)ublisher Gazebo plugin, to avoid name conflicts with other Gazebo plugins.
-        -->
-        <xacro:property name="bpgtp_nav_topic_no_cov"
-          value="${base_pose_ground_truth_publisher_sim_cfg.get('nav_topic_no_cov', '')}"/>
+      <xacro:if value="${pose_publisher_sim_cfg.get('enabled', False)}">
+        <xacro:property name="pose_pub_topic"
+                        value="${pose_publisher_sim_cfg.get('topic', '') or ''}"/>
+        <xacro:property name="pose_pub_topic_with_covariance"
+                        value="${pose_publisher_sim_cfg.get('topic_with_covariance', '') or ''}"/>
+        <xacro:property name="pose_pub_tf_topic"
+                        value="${pose_publisher_sim_cfg.get('tf_topic', '') or ''}"/>
 
-        <xacro:property name="bpgtp_nav_topic_cov"
-          value="${base_pose_ground_truth_publisher_sim_cfg.get('nav_topic_cov', '')}"/>
+        <xacro:if value="${pose_pub_topic == '' and pose_pub_topic_with_covariance == '' and pose_pub_tf_topic == ''}">
+          ${xacro.fatal("pose_publisher requires at least one output topic when pose_publisher.enabled is true.")}
+        </xacro:if>
 
-        <xacro:property name="bpgtp_tf_topic"
-          value="${base_pose_ground_truth_publisher_sim_cfg.get('tf_topic', '')}"/>
+        <xacro:if value="${pose_pub_topic != '' or pose_pub_topic_with_covariance != '' or pose_pub_tf_topic != ''}">
+          <xacro:if value="${pose_pub_topic != ''}">
+            <xacro:resolve_topic prop_id="pose_pub_resolved_topic"
+                                 topic="${pose_pub_topic}"
+                                 namespace="${robot_namespace}"/>
+          </xacro:if>
+          <xacro:if value="${pose_pub_topic == ''}">
+            <xacro:property name="pose_pub_resolved_topic" value=""/>
+          </xacro:if>
 
-        <!-- If one of the topics is empty, then the plugin is not loaded. -->
-        <xacro:if value="${bpgtp_nav_topic_cov != '' and bpgtp_nav_topic_no_cov != '' and bpgtp_tf_topic != ''}">
-          <xacro:resolve_topic prop_id="bpgtp_resolved_nav_topic_cov"
-            topic="${bpgtp_nav_topic_cov}"
-            namespace="${robot_namespace}"/>
+          <xacro:if value="${pose_pub_topic_with_covariance != ''}">
+            <xacro:resolve_topic prop_id="pose_pub_resolved_topic_with_covariance"
+                                 topic="${pose_pub_topic_with_covariance}"
+                                 namespace="${robot_namespace}"/>
+          </xacro:if>
+          <xacro:if value="${pose_pub_topic_with_covariance == ''}">
+            <xacro:property name="pose_pub_resolved_topic_with_covariance" value=""/>
+          </xacro:if>
 
-          <xacro:resolve_topic prop_id="bpgtp_resolved_nav_topic_no_cov"
-            topic="${bpgtp_nav_topic_no_cov}"
-            namespace="${robot_namespace}"/>
+          <xacro:if value="${pose_pub_tf_topic != ''}">
+            <xacro:resolve_topic prop_id="pose_pub_resolved_tf_topic"
+                                 topic="${pose_pub_tf_topic}"
+                                 namespace="${robot_namespace}"/>
+          </xacro:if>
+          <xacro:if value="${pose_pub_tf_topic == ''}">
+            <xacro:property name="pose_pub_resolved_tf_topic" value=""/>
+          </xacro:if>
 
-          <xacro:resolve_topic prop_id="bpgtp_resolved_tf_topic"
-            topic="${bpgtp_tf_topic}"
-            namespace="${robot_namespace}"/>
+          <xacro:property name="pose_pub_reference_frame"
+                          value="${pose_publisher_sim_cfg.get('reference_frame', '') or ''}"/>
 
-          <xacro:property name="bpgtp_fixed_frame"
-            value="${base_pose_ground_truth_publisher_sim_cfg.get('fixed_frame', 'sim_world')}"/>
+          <xacro:if value="${pose_pub_reference_frame == ''}">
+            ${xacro.fatal("pose_publisher.reference_frame is required when pose_publisher.enabled is true.")}
+          </xacro:if>
 
-          <xacro:property name="bpgtp_offset"
-            value="${base_pose_ground_truth_publisher_sim_cfg.get('offset', dict(x=0, y=0, z=0, R=0, P=0, Y=0))}"/>
+          <xacro:property name="pose_pub_local_offset"
+                          value="${pose_publisher_sim_cfg.get(
+                            'local_offset', dict(x=0, y=0, z=0, R=0, P=0, Y=0))}"/>
+          <xacro:property name="pose_pub_global_offset"
+                          value="${pose_publisher_sim_cfg.get(
+                            'global_offset', dict(x=0, y=0, z=0, R=0, P=0, Y=0))}"/>
+          <xacro:property name="pose_pub_gaussian_noise"
+                          value="${pose_publisher_sim_cfg.get('gaussian_noise', 0)}"/>
+          <xacro:property name="pose_pub_msg_publication_freq"
+                          value="${pose_publisher_sim_cfg.get('msg_publication_freq', 50)}"/>
 
-          <xacro:property name="bpgtp_global_offset"
-            value="${base_pose_ground_truth_publisher_sim_cfg.get('global_offset', dict(x=0, y=0, z=0, R=0, P=0, Y=0))}"/>
-
-          <xacro:property name="bpgtp_gaussian_noise"
-            value="${base_pose_ground_truth_publisher_sim_cfg.get('gaussian_noise', 0)}"/>
-
-          <xacro:property name="bpgtp_publication_frequency"
-            value="${base_pose_ground_truth_publisher_sim_cfg.get('publication_frequency', 50)}"/>
-
-          <xacro:plugin_odometry_publisher
-            odom_frame="${bpgtp_fixed_frame}"
-            robot_base_frame="${robot_prefix}${base_name}_footprint_link"
-            odom_publish_frequency="${bpgtp_publication_frequency}"
-            odom_topic="${bpgtp_resolved_nav_topic_no_cov}"
-            odom_covariance_topic="${bpgtp_resolved_nav_topic_cov}"
-            tf_topic="${bpgtp_resolved_tf_topic}"
+          <xacro:plugin_pose_publisher_in_reference_frame
+            reference_frame="${pose_pub_reference_frame}"
+            robot_frame="${robot_prefix}${base_name}_footprint_link"
+            msg_publication_freq="${pose_pub_msg_publication_freq}"
+            topic="${pose_pub_resolved_topic}"
+            topic_with_covariance="${pose_pub_resolved_topic_with_covariance}"
+            tf_topic="${pose_pub_resolved_tf_topic}"
             dimensions="2"
-            xyz_offset="${bpgtp_offset['x']} ${bpgtp_offset['y']} ${bpgtp_offset['z']}"
-            rpy_offset="${bpgtp_offset['R']} ${bpgtp_offset['P']} ${bpgtp_offset['Y']}"
-            xyz_global_offset="${bpgtp_global_offset['x']} ${bpgtp_global_offset['y']} ${bpgtp_global_offset['z']}"
-            rpy_global_offset="${bpgtp_global_offset['R']} ${bpgtp_global_offset['P']} ${bpgtp_global_offset['Y']}"
-            gaussian_noise="${bpgtp_gaussian_noise}"/>
+            xyz_offset="${pose_pub_local_offset['x']} ${pose_pub_local_offset['y']} ${pose_pub_local_offset['z']}"
+            rpy_offset="${pose_pub_local_offset['R']} ${pose_pub_local_offset['P']} ${pose_pub_local_offset['Y']}"
+            xyz_global_offset="${pose_pub_global_offset['x']} ${pose_pub_global_offset['y']} ${pose_pub_global_offset['z']}"
+            rpy_global_offset="${pose_pub_global_offset['R']} ${pose_pub_global_offset['P']} ${pose_pub_global_offset['Y']}"
+            gaussian_noise="${pose_pub_gaussian_noise}"/>
         </xacro:if>
       </xacro:if>
 
@@ -597,93 +595,105 @@
       -->
 
       <!--
-      `JointPositionController` Gazebo plugin for the steering joint of the steerable wheel 0.
+      `JointPositionController` Gazebo plugin for the front-left steering joint.
        -->
 
-      <xacro:property name="sw0_sj_controller_sim_cfg"
-        value="${sim_cfg.get('base_steerable_wheel_0_steering_joint_controller', dict())}"/>
+      <xacro:property name="front_left_wheel_steering_controller_sim_cfg"
+        value="${sim_cfg.get('front_left_wheel_steering_joint_controller', dict())}"/>
 
-      <xacro:if value="${sw0_sj_controller_sim_cfg.get('enabled', False)}">
-        <xacro:property name="sw0_sj_topic"
-          value="${sw0_sj_controller_sim_cfg.get('topic', '')}"/>
+      <xacro:if value="${front_left_wheel_steering_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="front_left_wheel_steering_topic"
+          value="${front_left_wheel_steering_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
-        <xacro:if value="${sw0_sj_topic != ''}">
+        <xacro:if value="${front_left_wheel_steering_topic == ''}">
+          ${xacro.fatal("front_left_wheel_steering_joint_controller.topic is required when the controller is enabled.")}
+        </xacro:if>
+
+        <xacro:if value="${front_left_wheel_steering_topic != ''}">
           <xacro:plugin_swheel_steering_joint_am_pos_velcmd
-            joint_name="${robot_prefix}${steerable_wheel_0_name}_steering_joint"
+            joint_name="${robot_prefix}${front_left_wheel_name}_steering_joint"
             joint_limits="${s_wheel_steering_joint_limits}"
-            initial_position="${sw0_sj_controller_sim_cfg.get('initial_angle', '')}"
+            initial_position="${front_left_wheel_steering_controller_sim_cfg.get('initial_angle', '')}"
             namespace="${robot_namespace}"
-            topic="${sw0_sj_topic}"
+            topic="${front_left_wheel_steering_topic}"
             actuator_number="0"/>
         </xacro:if>
       </xacro:if>
 
       <!--
-      `JointPositionController` Gazebo plugin for the steering joint of the steerable wheel 1.
+      `JointPositionController` Gazebo plugin for the front-right steering joint.
        -->
 
-      <xacro:property name="sw1_sj_controller_sim_cfg"
-        value="${sim_cfg.get('base_steerable_wheel_1_steering_joint_controller', dict())}"/>
+      <xacro:property name="front_right_wheel_steering_controller_sim_cfg"
+        value="${sim_cfg.get('front_right_wheel_steering_joint_controller', dict())}"/>
 
-      <xacro:if value="${sw1_sj_controller_sim_cfg.get('enabled', False)}">
-        <xacro:property name="sw1_sj_topic"
-          value="${sw1_sj_controller_sim_cfg.get('topic', '')}"/>
+      <xacro:if value="${front_right_wheel_steering_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="front_right_wheel_steering_topic"
+          value="${front_right_wheel_steering_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
-        <xacro:if value="${sw1_sj_topic != ''}">
+        <xacro:if value="${front_right_wheel_steering_topic == ''}">
+          ${xacro.fatal("front_right_wheel_steering_joint_controller.topic is required when the controller is enabled.")}
+        </xacro:if>
+
+        <xacro:if value="${front_right_wheel_steering_topic != ''}">
           <xacro:plugin_swheel_steering_joint_am_pos_velcmd
-            joint_name="${robot_prefix}${steerable_wheel_1_name}_steering_joint"
+            joint_name="${robot_prefix}${front_right_wheel_name}_steering_joint"
             joint_limits="${s_wheel_steering_joint_limits}"
-            initial_position="${sw1_sj_controller_sim_cfg.get('initial_angle', '')}"
+            initial_position="${front_right_wheel_steering_controller_sim_cfg.get('initial_angle', '')}"
             namespace="${robot_namespace}"
-            topic="${sw1_sj_topic}"
+            topic="${front_right_wheel_steering_topic}"
             actuator_number="1"/>
         </xacro:if>
       </xacro:if>
 
       <!--
-      `JointPositionController` Gazebo plugin for the steering joint of the steerable wheel 2.
+      `JointPositionController` Gazebo plugin for the rear-left steering joint.
        -->
 
-      <xacro:property name="sw2_sj_controller_sim_cfg"
-        value="${sim_cfg.get('base_steerable_wheel_2_steering_joint_controller', dict())}"/>
+      <xacro:property name="rear_left_wheel_steering_controller_sim_cfg"
+        value="${sim_cfg.get('rear_left_wheel_steering_joint_controller', dict())}"/>
 
-      <xacro:if value="${sw2_sj_controller_sim_cfg.get('enabled', False)}">
-        <xacro:property name="sw2_sj_topic"
-          value="${sw2_sj_controller_sim_cfg.get('topic', '')}"/>
+      <xacro:if value="${rear_left_wheel_steering_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="rear_left_wheel_steering_topic"
+          value="${rear_left_wheel_steering_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
-        <xacro:if value="${sw2_sj_topic != ''}">
+        <xacro:if value="${rear_left_wheel_steering_topic == ''}">
+          ${xacro.fatal("rear_left_wheel_steering_joint_controller.topic is required when the controller is enabled.")}
+        </xacro:if>
+
+        <xacro:if value="${rear_left_wheel_steering_topic != ''}">
           <xacro:plugin_swheel_steering_joint_am_pos_velcmd
-            joint_name="${robot_prefix}${steerable_wheel_2_name}_steering_joint"
+            joint_name="${robot_prefix}${rear_left_wheel_name}_steering_joint"
             joint_limits="${s_wheel_steering_joint_limits}"
-            initial_position="${sw2_sj_controller_sim_cfg.get('initial_angle', '')}"
+            initial_position="${rear_left_wheel_steering_controller_sim_cfg.get('initial_angle', '')}"
             namespace="${robot_namespace}"
-            topic="${sw2_sj_topic}"
+            topic="${rear_left_wheel_steering_topic}"
             actuator_number="2"/>
         </xacro:if>
       </xacro:if>
 
       <!--
-      `JointPositionController` Gazebo plugin for the steering joint of the steerable wheel 3.
+      `JointPositionController` Gazebo plugin for the rear-right steering joint.
        -->
 
-      <xacro:property name="sw3_sj_controller_sim_cfg"
-        value="${sim_cfg.get('base_steerable_wheel_3_steering_joint_controller', dict())}"/>
+      <xacro:property name="rear_right_wheel_steering_controller_sim_cfg"
+        value="${sim_cfg.get('rear_right_wheel_steering_joint_controller', dict())}"/>
 
-      <xacro:if value="${sw3_sj_controller_sim_cfg.get('enabled', False)}">
-        <xacro:property name="sw3_sj_topic"
-          value="${sw3_sj_controller_sim_cfg.get('topic', '')}"/>
+      <xacro:if value="${rear_right_wheel_steering_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="rear_right_wheel_steering_topic"
+          value="${rear_right_wheel_steering_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
-        <xacro:if value="${sw3_sj_topic != ''}">
+        <xacro:if value="${rear_right_wheel_steering_topic == ''}">
+          ${xacro.fatal("rear_right_wheel_steering_joint_controller.topic is required when the controller is enabled.")}
+        </xacro:if>
+
+        <xacro:if value="${rear_right_wheel_steering_topic != ''}">
           <xacro:plugin_swheel_steering_joint_am_pos_velcmd
-            joint_name="${robot_prefix}${steerable_wheel_3_name}_steering_joint"
+            joint_name="${robot_prefix}${rear_right_wheel_name}_steering_joint"
             joint_limits="${s_wheel_steering_joint_limits}"
-            initial_position="${sw3_sj_controller_sim_cfg.get('initial_angle', '')}"
+            initial_position="${rear_right_wheel_steering_controller_sim_cfg.get('initial_angle', '')}"
             namespace="${robot_namespace}"
-            topic="${sw3_sj_topic}"
+            topic="${rear_right_wheel_steering_topic}"
             actuator_number="3"/>
         </xacro:if>
       </xacro:if>
@@ -693,96 +703,107 @@
       steerable wheel.
       In this case, actuator messages (actuator_msgs/msg/Actuators) are used to transport the
       velocity of the rotation joints.
-      Pure velocity commands (no force derived from velocity) are used to control the steering joints,
-      instead of using PIDs.
+      Pure velocity commands control the rotation joints instead of deriving forces through PIDs.
 
       'rj' -> rotation joint.
       -->
 
       <!--
-      `JointController` Gazebo plugin for the rotation joint of the steerable wheel 0.
+      `JointController` Gazebo plugin for the front-left rotation joint.
        -->
-      <xacro:property name="sw0_rj_controller_sim_cfg"
-        value="${sim_cfg.get('base_steerable_wheel_0_rotation_joint_controller', dict())}"/>
+      <xacro:property name="front_left_wheel_rotation_controller_sim_cfg"
+        value="${sim_cfg.get('front_left_wheel_rotation_joint_controller', dict())}"/>
 
-      <xacro:if value="${sw0_rj_controller_sim_cfg.get('enabled', False)}">
-        <xacro:property name="sw0_rj_topic"
-          value="${sw0_rj_controller_sim_cfg.get('topic', '')}"/>
+      <xacro:if value="${front_left_wheel_rotation_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="front_left_wheel_rotation_topic"
+          value="${front_left_wheel_rotation_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
-        <xacro:if value="${sw0_rj_topic != ''}">
+        <xacro:if value="${front_left_wheel_rotation_topic == ''}">
+          ${xacro.fatal("front_left_wheel_rotation_joint_controller.topic is required when the controller is enabled.")}
+        </xacro:if>
+
+        <xacro:if value="${front_left_wheel_rotation_topic != ''}">
           <xacro:plugin_wheel_rotation_joint_am_vel
-            joint_name="${robot_prefix}${steerable_wheel_0_name}_rotation_joint"
+            joint_name="${robot_prefix}${front_left_wheel_name}_rotation_joint"
             joint_limits="${s_wheel_rotation_joint_limits}"
             initial_velocity="0.0"
             namespace="${robot_namespace}"
-            topic="${sw0_rj_topic}"
+            topic="${front_left_wheel_rotation_topic}"
             actuator_number="0"/>
         </xacro:if>
       </xacro:if>
 
       <!--
-      `JointController` Gazebo plugin for the rotation joint of the steerable wheel 1.
+      `JointController` Gazebo plugin for the front-right rotation joint.
        -->
-      <xacro:property name="sw1_rj_controller_sim_cfg"
-        value="${sim_cfg.get('base_steerable_wheel_1_rotation_joint_controller', dict())}"/>
+      <xacro:property name="front_right_wheel_rotation_controller_sim_cfg"
+        value="${sim_cfg.get('front_right_wheel_rotation_joint_controller', dict())}"/>
 
-      <xacro:if value="${sw1_rj_controller_sim_cfg.get('enabled', False)}">
-        <xacro:property name="sw1_rj_topic"
-          value="${sw1_rj_controller_sim_cfg.get('topic', '')}"/>
+      <xacro:if value="${front_right_wheel_rotation_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="front_right_wheel_rotation_topic"
+          value="${front_right_wheel_rotation_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
-        <xacro:if value="${sw1_rj_topic != ''}">
+        <xacro:if value="${front_right_wheel_rotation_topic == ''}">
+          ${xacro.fatal("front_right_wheel_rotation_joint_controller.topic is required when the controller is enabled.")}
+        </xacro:if>
+
+        <xacro:if value="${front_right_wheel_rotation_topic != ''}">
           <xacro:plugin_wheel_rotation_joint_am_vel
-            joint_name="${robot_prefix}${steerable_wheel_1_name}_rotation_joint"
+            joint_name="${robot_prefix}${front_right_wheel_name}_rotation_joint"
             joint_limits="${s_wheel_rotation_joint_limits}"
             initial_velocity="0.0"
             namespace="${robot_namespace}"
-            topic="${sw1_rj_topic}"
+            topic="${front_right_wheel_rotation_topic}"
             actuator_number="1"/>
         </xacro:if>
       </xacro:if>
 
       <!--
-      `JointController` Gazebo plugin for the rotation joint of the steerable wheel 2.
+      `JointController` Gazebo plugin for the rear-left rotation joint.
        -->
-      <xacro:property name="sw2_rj_controller_sim_cfg"
-        value="${sim_cfg.get('base_steerable_wheel_2_rotation_joint_controller', dict())}"/>
+      <xacro:property name="rear_left_wheel_rotation_controller_sim_cfg"
+        value="${sim_cfg.get('rear_left_wheel_rotation_joint_controller', dict())}"/>
 
-      <xacro:if value="${sw2_rj_controller_sim_cfg.get('enabled', False)}">
-        <xacro:property name="sw2_rj_topic"
-          value="${sw2_rj_controller_sim_cfg.get('topic', '')}"/>
+      <xacro:if value="${rear_left_wheel_rotation_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="rear_left_wheel_rotation_topic"
+          value="${rear_left_wheel_rotation_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
-        <xacro:if value="${sw2_rj_topic != ''}">
+        <xacro:if value="${rear_left_wheel_rotation_topic == ''}">
+          ${xacro.fatal("rear_left_wheel_rotation_joint_controller.topic is required when the controller is enabled.")}
+        </xacro:if>
+
+        <xacro:if value="${rear_left_wheel_rotation_topic != ''}">
           <xacro:plugin_wheel_rotation_joint_am_vel
-            joint_name="${robot_prefix}${steerable_wheel_2_name}_rotation_joint"
+            joint_name="${robot_prefix}${rear_left_wheel_name}_rotation_joint"
             joint_limits="${s_wheel_rotation_joint_limits}"
             initial_velocity="0.0"
             namespace="${robot_namespace}"
-            topic="${sw2_rj_topic}"
+            topic="${rear_left_wheel_rotation_topic}"
             actuator_number="2"/>
         </xacro:if>
       </xacro:if>
 
       <!--
-      `JointController` Gazebo plugin for the rotation joint of the steerable wheel 3.
+      `JointController` Gazebo plugin for the rear-right rotation joint.
        -->
-      <xacro:property name="sw3_rj_controller_sim_cfg"
-        value="${sim_cfg.get('base_steerable_wheel_3_rotation_joint_controller', dict())}"/>
+      <xacro:property name="rear_right_wheel_rotation_controller_sim_cfg"
+        value="${sim_cfg.get('rear_right_wheel_rotation_joint_controller', dict())}"/>
 
-      <xacro:if value="${sw3_rj_controller_sim_cfg.get('enabled', False)}">
-        <xacro:property name="sw3_rj_topic"
-          value="${sw3_rj_controller_sim_cfg.get('topic', '')}"/>
+      <xacro:if value="${rear_right_wheel_rotation_controller_sim_cfg.get('enabled', False)}">
+        <xacro:property name="rear_right_wheel_rotation_topic"
+          value="${rear_right_wheel_rotation_controller_sim_cfg.get('topic', '')}"/>
 
-        <!-- No topic, no Gazebo plugin -->
-        <xacro:if value="${sw3_rj_topic != ''}">
+        <xacro:if value="${rear_right_wheel_rotation_topic == ''}">
+          ${xacro.fatal("rear_right_wheel_rotation_joint_controller.topic is required when the controller is enabled.")}
+        </xacro:if>
+
+        <xacro:if value="${rear_right_wheel_rotation_topic != ''}">
           <xacro:plugin_wheel_rotation_joint_am_vel
-            joint_name="${robot_prefix}${steerable_wheel_3_name}_rotation_joint"
+            joint_name="${robot_prefix}${rear_right_wheel_name}_rotation_joint"
             joint_limits="${s_wheel_rotation_joint_limits}"
             initial_velocity="0.0"
             namespace="${robot_namespace}"
-            topic="${sw3_rj_topic}"
+            topic="${rear_right_wheel_rotation_topic}"
             actuator_number="3"/>
         </xacro:if>
       </xacro:if>

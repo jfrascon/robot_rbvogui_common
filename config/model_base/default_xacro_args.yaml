@@ -1,0 +1,22 @@
+# Default xacro arguments for the VOG base model.
+# Runtime arguments such as namespace, robot_name, and sim_file are provided by launch files.
+
+###################################################################################################
+# Body
+###################################################################################################
+
+body_color: "0.5 0.5 0.5 1.0"
+body_use_visual: true
+body_use_collision: true
+body_use_inertial: true
+
+###################################################################################################
+# Steerable wheels
+###################################################################################################
+
+s_wheel_use_visual: true
+s_wheel_use_v_mesh: true
+s_wheel_color: "0.1 0.1 0.1 1.0"
+s_wheel_use_inertial: true
+s_wheel_steering_joint_limits: "-3.1416 3.1416 100.0 100000.0"
+s_wheel_rotation_joint_limits: "100.0 100000.0"

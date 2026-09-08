@@ -1,169 +1,116 @@
-from pathlib import Path
-from typing import Any, List
-
-import ros2_launch_helpers as rlh
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch import LaunchContext
+from launch import LaunchDescription
+from launch import LaunchDescriptionEntity
+from launch.actions import DeclareLaunchArgument
+from launch.actions import OpaqueFunction
+from launch.actions import SetLaunchConfiguration
 from launch.substitutions import LaunchConfiguration
-from launch.utilities.type_utils import normalize_typed_substitution, perform_typed_substitution
+from launch.utilities.type_utils import normalize_typed_substitution
+from launch.utilities.type_utils import perform_typed_substitution
 from launch_ros.actions import Node
 from launch_ros.descriptions import ParameterFile
-
-from launch import LaunchContext, LaunchDescription, LaunchDescriptionEntity
+from launch_ros.descriptions import ParameterValue
+import ros2_launch_helpers as rlh
 
 
 def generate_launch_description() -> LaunchDescription:
     """
-    Build the internal Gazebo bridge launch description for one robot model wrapper.
+    Build the internal Gazebo bridge launch description for one robot model.
 
-    This launch file is meant to be included by `model_*.launch.py`, not to be
-    used as the user entry point for the `robot_vog` package.
-
-    The model wrapper is responsible for passing a model-specific `bridge_file`
-    and `params_file` when those files should be loaded. If this launch file is
-    called directly and one of those arguments is left empty, the corresponding
-    external file is not loaded.
+    This launch file is meant to be composed by Gazebo simulation launch files, but can be run
+    directly as well. When robot_bridge_params_file_allow_substs is true, the caller can pass the
+    launch keys used by the parameter file as extra CLI arguments even if this launch file does not
+    declare those keys.
     """
-    ldes: List[LaunchDescriptionEntity] = [
-        DeclareLaunchArgument('project_namespace', default_value='', description='Project namespace'),
-        DeclareLaunchArgument('robot_name', default_value='vog', description='The unique name for the robot'),
-        OpaqueFunction(function=rlh.set_robot_namespace),
-        OpaqueFunction(function=rlh.set_robot_prefix),
-        DeclareLaunchArgument('params_file', default_value='', description='Path to params file'),
-        DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='False',
-            choices=['True', 'true', 'False', 'false'],
-            description='Use simulation clock if true',
-        ),
-        DeclareLaunchArgument(
-            'config_file', default_value='', description='YAML file to be loaded as the bridge configuration'
-        ),
-        DeclareLaunchArgument(
-            'subscription_heartbeat',
-            default_value='',
-            description='Period (ms) at which the node checks for new subscribers for lazy '
-            'bridges. Good default value is 1000',
-        ),
-        DeclareLaunchArgument(
-            'expand_gz_topic_names',
-            default_value='',
-            choices=['True', 'true', 'False', 'false', ''],
-            description='Enable or disable ROS namespace applied on GZ topics',
-        ),
-        DeclareLaunchArgument(
-            'override_timestamps_with_wall_time',
-            default_value='',
-            choices=['True', 'true', 'False', 'false', ''],
-            description='Override the header.stamp field of outgoing messages with wall time (GZ to ROS).',
-        ),
-        DeclareLaunchArgument(
-            'override_frame_id',
-            default_value='',
-            description='Override the header.frame_id field with a new string value (GZ to ROS)',
-        ),
-        ####################################################################
-        # NODE OPTIONS
-        ####################################################################
-        DeclareLaunchArgument(
-            'bridge_node_options', default_value=rlh.default_node_options_str(), description=rlh.NODE_OPTIONS_DESC
-        ),
-        ####################################################################
-        # LOGGING OPTIONS
-        ####################################################################
-        DeclareLaunchArgument(
-            'bridge_node_logging_options',
-            default_value=rlh.default_logging_options_str(),
-            description=rlh.LOGGING_OPTIONS_DESC,
-        ),
-        ####################################################################
-        # NODES
-        ####################################################################
-        OpaqueFunction(function=_launch_bridge),
-    ]
-
-    return LaunchDescription(ldes)
-
-
-def _launch_bridge(ctx: LaunchContext) -> List[LaunchDescriptionEntity]:
-    """
-    Launch the ROS-GZ bridge for one robot instance.
-    """
-    # The parameter `use_sim_time` is managed in the launch file.
-    # If the field `use_sim_time` appears in the params_file, it is ignored.
-    # Bridges are only launch in simulation, so if `use_sim_time` is false, do not launch the bridge
-    # and return an empty list of launch entities.
-    use_sim_time = perform_typed_substitution(
-        ctx, normalize_typed_substitution(LaunchConfiguration('use_sim_time'), bool), bool
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument('namespace', default_value='', description='Project namespace'),
+            DeclareLaunchArgument('robot_name', description='The unique name for the robot'),
+            DeclareLaunchArgument(
+                'robot_bridge_params_file',
+                description='Path to the complete robot parameter YAML file.',
+            ),
+            DeclareLaunchArgument(
+                'robot_bridge_params_file_allow_substs',
+                choices=['True', 'true', 'False', 'false'],
+                description='Allow ROS launch substitutions in robot_bridge_params_file',
+            ),
+            DeclareLaunchArgument(
+                'use_sim_time',
+                choices=['True', 'true', 'False', 'false'],
+                description='Use ROS time from /clock if true.',
+            ),
+            DeclareLaunchArgument(
+                'robot_bridge_config_file',
+                description='Path to the robot bridge configuration file.',
+            ),
+            DeclareLaunchArgument(
+                'node_args',
+                default_value='{"output":"both","ros_arguments":["--log-level","info"]}',
+                description=rlh.LAUNCH_ACTION_ARGUMENTS_DESC,
+            ),
+            rlh.RequireFile(path=LaunchConfiguration('robot_bridge_params_file')),
+            rlh.RequireFile(path=LaunchConfiguration('robot_bridge_config_file')),
+            # Insert `robot_type`, `robot_namespace` and `robot_prefix` into the launch context.
+            # Their values can then be substituted in the parameter file if needed.
+            SetLaunchConfiguration('robot_type', 'vog'),
+            rlh.SetRobotNamespace(
+                namespace=LaunchConfiguration('namespace'),
+                robot_name=LaunchConfiguration('robot_name'),
+                output_context_key='robot_namespace',
+            ),
+            rlh.SetRobotPrefix(
+                robot_name=LaunchConfiguration('robot_name'), output_context_key='robot_prefix'
+            ),
+            OpaqueFunction(function=_launch_node),
+        ]
     )
 
-    if not use_sim_time:
-        return []
 
-    # If the params_file exists, load it as a ParameterFile.
-    # If any parameter is also provided to this launch file, it takes precedence over the
-    # params_file.
-    # This allows to override specific parameters in the params_file without having to create a new
-    # params file.
+def _launch_node(ctx: LaunchContext) -> list[LaunchDescriptionEntity]:
+    """
+    Launch the bridge for the robot model.
 
-    parameters: List[Any] = []
-
-    params_file = LaunchConfiguration('params_file').perform(ctx)
-    subscription_heartbeat = LaunchConfiguration('subscription_heartbeat').perform(ctx)
-    config_file = LaunchConfiguration('config_file').perform(ctx)
-    expand_gz_topic_names = LaunchConfiguration('expand_gz_topic_names').perform(ctx)
-    override_timestamps_with_wall_time = LaunchConfiguration('override_timestamps_with_wall_time').perform(ctx)
-    override_frame_id = LaunchConfiguration('override_frame_id').perform(ctx)
-
-    if params_file:
-        if not Path(params_file).is_file():
-            raise FileNotFoundError(f"Params file '{params_file}' not found.")
-
-        parameters.append(ParameterFile(params_file, allow_substs=True))
-
-    if subscription_heartbeat:
-        try:
-            parameters.append({'subscription_heartbeat': int(subscription_heartbeat)})
-        except ValueError as exc:
-            raise ValueError(
-                f"Invalid value for subscription_heartbeat: '{subscription_heartbeat}'. Must be an integer."
-            ) from exc
-
-    if config_file:
-        if not Path(config_file).is_file():
-            raise FileNotFoundError(f"Bridge file '{config_file}' not found.")
-
-        parameters.append({'config_file': config_file})
-
-    if expand_gz_topic_names:
-        parameters.append({'expand_gz_topic_names': expand_gz_topic_names.lower() == 'true'})
-
-    if override_timestamps_with_wall_time:
-        parameters.append({'override_timestamps_with_wall_time': override_timestamps_with_wall_time.lower() == 'true'})
-
-    if override_frame_id:
-        parameters.append({'override_frame_id': override_frame_id})
-
-    parameters.append({'use_sim_time': use_sim_time})
-
-    node_options = rlh.process_node_options(LaunchConfiguration('bridge_node_options').perform(ctx))
-    node_name = str(node_options['name']) or 'bridge'
-
-    if not rlh.is_valid_name(node_name):
-        raise RuntimeError(f"The name of the node must be ASCII [A-Za-z0-9_] only: '{node_name}'")
+    The bridge transfers topics between ROS and Gazebo.
+    The caller decides whether the bridge node uses ROS time from /clock through `use_sim_time`.
+    """
+    params_allow_substs = perform_typed_substitution(
+        ctx,
+        normalize_typed_substitution(
+            LaunchConfiguration('robot_bridge_params_file_allow_substs'), bool
+        ),
+        bool,
+    )
 
     return [
         Node(
             package='ros_gz_bridge',
             executable='bridge_node',
-            name=node_name,
-            namespace=LaunchConfiguration('namespace'),
-            parameters=parameters,
-            ros_arguments=rlh.process_node_logging_options(
-                LaunchConfiguration('bridge_node_logging_options').perform(ctx)
+            namespace=LaunchConfiguration('robot_namespace'),
+            parameters=[
+                ParameterFile(
+                    LaunchConfiguration('robot_bridge_params_file'),
+                    allow_substs=params_allow_substs,
+                ),
+                # `expand_gz_topic_names` is always true because Gazebo topics are expected to
+                # include the robot namespace so multiple robots can run in the same simulation.
+                # `override_frame_id` is set to an empty string because Gazebo plugins publish the
+                # required frame_id.
+                {
+                    'use_sim_time': ParameterValue(
+                        LaunchConfiguration('use_sim_time'), value_type=bool
+                    ),
+                    'config_file': ParameterValue(
+                        LaunchConfiguration('robot_bridge_config_file'), value_type=str
+                    ),
+                    'expand_gz_topic_names': True,
+                    'override_frame_id': '',
+                },
+            ],
+            **rlh.resolve_node_arguments(
+                LaunchConfiguration('node_args').perform(ctx),
+                default_arguments={'name': 'ros_gz_bridge'},
+                extra_rejected_arguments={'namespace'},
             ),
-            output=node_options['output'],
-            emulate_tty=node_options['emulate_tty'],
-            respawn=node_options['respawn'],
-            respawn_delay=node_options['respawn_delay'],
         )
     ]

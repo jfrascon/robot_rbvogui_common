@@ -1,32 +1,48 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>robot_vog</name>
   <version>1.0.0</version>
-  <description>URDF descriptions for the robot_vog robot family</description>
-  <maintainer email="jfracon@gmail.com">Juan Francisco Rascon Crespo</maintainer>
-  <license>BSD-3-Clause</license>
+  <description>
+    Robot descriptions, launch files, and deployment configuration for the VOG robot family
+  </description>
+  <maintainer email="jfrascon@gmail.com">Juan Francisco Rascon Crespo</maintainer>
+  <license>Apache-2.0</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>ground_vehicle_kinematics</exec_depend>
+  <exec_depend>joint_position_controller_server</exec_depend>
   <exec_depend>robotics_description</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>ros2_launch_helpers</exec_depend>
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>ros_gz_bridge</exec_depend>
-  <exec_depend>python3-setuptools</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_tools</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
+  <exec_depend>rviz2</exec_depend>
   <exec_depend>xacro</exec_depend>
 
-  <test_depend>python3-pytest</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>ament_cmake_xmllint</test_depend>
+  <test_depend>ament_cmake_flake8</test_depend>
+  <test_depend>ament_cmake_pep257</test_depend>
+  <!--
+  <test_depend>ament_cmake_copyright</test_depend>
+  -->
+  <!--
+  <test_depend>ament_cmake_mypy</test_depend>
+  -->
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
   <test_depend>liburdfdom-tools</test_depend>
-  <test_depend>ros2launch</test_depend>
-  <test_depend>xacro</test_depend>
 
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

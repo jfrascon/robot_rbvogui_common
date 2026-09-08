@@ -9,37 +9,69 @@ base_velocity_controller:
   initial_linear_vel: {"x": 0.0, "y": 0.0, "z": 0.0}
   initial_angular_vel: {"x": 0.0, "y": 0.0, "z": 0.0}
 
-base_pose_ground_truth_publisher:
+# Wheel-ground contact configuration. The four blocks preserve the logical order expected by
+# ground_vehicle_kinematics: front-left, front-right, rear-left, rear-right.
+front_left_wheel:
   enabled: true
-  fixed_frame: map
-  offset: {"x": 0.0, "y": 0.0, "z": 0.0, "R": 0.0, "P": 0.0, "Y": 0.0}
+  max_contacts: 1
+  mu: 0.05
+  mu2: 0.5
+  slip1: 0.005
+  slip2: 0.0005
+
+front_right_wheel:
+  enabled: true
+  max_contacts: 1
+  mu: 0.05
+  mu2: 0.5
+  slip1: 0.005
+  slip2: 0.0005
+
+rear_left_wheel:
+  enabled: true
+  max_contacts: 1
+  mu: 0.05
+  mu2: 0.5
+  slip1: 0.005
+  slip2: 0.0005
+
+rear_right_wheel:
+  enabled: true
+  max_contacts: 1
+  mu: 0.05
+  mu2: 0.5
+  slip1: 0.005
+  slip2: 0.0005
+
+pose_publisher:
+  enabled: true
+  reference_frame: map
+  local_offset: {"x": 0.0, "y": 0.0, "z": 0.0, "R": 0.0, "P": 0.0, "Y": 0.0}
   global_offset: {"x": 0.0, "y": 0.0, "z": 0.0, "R": 0.0, "P": 0.0, "Y": 0.0}
   gaussian_noise: 0.0
-  publication_frequency: 50.0
-  nav_topic_no_cov: base_pose_ground_truth_no_cov # published
-  nav_topic_cov: base_pose_ground_truth # published
+  msg_publication_freq: 50.0
+  topic: base_pose_ground_truth_no_cov # published
+  topic_with_covariance: base_pose_ground_truth # published
   tf_topic: tf_sim_world_fr_robot_root_fr # published
 
-# Plugin to control the steering joint of the steerable wheel 0
-base_steerable_wheel_0_steering_joint_controller:
+# Steering controller indices 0 through 3 map to front-left, front-right, rear-left and
+# rear-right, in that order.
+front_left_wheel_steering_joint_controller:
   enabled: true
   initial_angle: 0.0
   topic: joint_commands/base # received
 
-# Plugin to control the steering joint of the steerable wheel 1
-base_steerable_wheel_1_steering_joint_controller:
+front_right_wheel_steering_joint_controller:
   enabled: true
   initial_angle: 0.0
   topic: joint_commands/base # received
 
-# Plugin to control the steering joint of the steerable wheel 2
-base_steerable_wheel_2_steering_joint_controller:
+rear_left_wheel_steering_joint_controller:
   enabled: true
   initial_angle: 0.0
   topic: joint_commands/base # received
 
-# Plugin to control the steering joint of the steerable wheel 3
-base_steerable_wheel_3_steering_joint_controller:
+rear_right_wheel_steering_joint_controller:
   enabled: true
   initial_angle: 0.0
   topic: joint_commands/base # received
@@ -49,19 +81,19 @@ base_steerable_wheel_3_steering_joint_controller:
 # the base_velocity_controller.
 # If disabled, the wheels will not rotate visually, but the platform will still
 # move correctly.
-base_steerable_wheel_0_rotation_joint_controller:
+front_left_wheel_rotation_joint_controller:
   enabled: true
   topic: joint_commands/base # received
 
-base_steerable_wheel_1_rotation_joint_controller:
+front_right_wheel_rotation_joint_controller:
   enabled: true
   topic: joint_commands/base # received
 
-base_steerable_wheel_2_rotation_joint_controller:
+rear_left_wheel_rotation_joint_controller:
   enabled: true
   topic: joint_commands/base # received
 
-base_steerable_wheel_3_rotation_joint_controller:
+rear_right_wheel_rotation_joint_controller:
   enabled: true
   topic: joint_commands/base # received
 

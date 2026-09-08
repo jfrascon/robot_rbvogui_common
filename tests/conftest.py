@@ -1,7 +1,7 @@
 import os
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 
 PACKAGE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PACKAGE_DIR))
@@ -24,8 +24,15 @@ def run_bash(command: str, *, timeout: int = 60) -> subprocess.CompletedProcess[
     """Run one bash command in the workspace with ROS and workspace setup sourced."""
     ros_distro = os.environ.get('ROS_DISTRO', 'jazzy')
     ros_setup = os.environ.get('ROS_SETUP_BASH', f'/opt/ros/{ros_distro}/setup.bash')
-    bash_command = f'source "{ros_setup}" && source "{WORKSPACE_DIR / "install" / "setup.bash"}" && {command}'
+    bash_command = (
+        f'source "{ros_setup}" && source "{WORKSPACE_DIR / "install" / "setup.bash"}" && {command}'
+    )
 
     return subprocess.run(
-        ['bash', '-lc', bash_command], cwd=WORKSPACE_DIR, text=True, capture_output=True, timeout=timeout, check=False
+        ['bash', '-lc', bash_command],
+        cwd=WORKSPACE_DIR,
+        text=True,
+        capture_output=True,
+        timeout=timeout,
+        check=False,
     )
