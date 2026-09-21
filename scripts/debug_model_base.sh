@@ -3,6 +3,7 @@ set -euo pipefail
 
 package_share="$(ros2 pkg prefix robot_rbvogui_common)/share/robot_rbvogui_common"
 
+# The launch logs a persistent /tmp URDF path after rendering the base Xacro.
 # The launch arguments below are defaults passed explicitly by this script.
 # To override any of them, append the replacement argument after the script name.
 # Example:

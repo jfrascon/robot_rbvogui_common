@@ -33,10 +33,19 @@ if(BUILD_TESTING)
     "AMENT_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}:$ENV{AMENT_PREFIX_PATH}")
   ament_add_pytest_test(test_debug_scripts tests/test_debug_scripts.py TIMEOUT 120)
   ament_add_pytest_test(
+    test_debug_launch_helpers tests/test_debug_launch_helpers.py TIMEOUT 120 ENV
+    "ROS_LOG_DIR=${CMAKE_BINARY_DIR}/ros_logs")
+  ament_add_pytest_test(
     test_model_xacro_args_contract tests/test_model_xacro_args_contract.py TIMEOUT 120)
+  ament_add_pytest_test(
+    test_render_robot_urdf_launch_helpers tests/test_render_robot_urdf_launch_helpers.py
+    TIMEOUT 120 ENV "ROS_LOG_DIR=${CMAKE_BINARY_DIR}/ros_logs")
   ament_add_pytest_test(
     test_robot_state_publisher_launch_helpers tests/test_robot_state_publisher_launch_helpers.py
     TIMEOUT 120 ENV "ROS_LOG_DIR=${CMAKE_BINARY_DIR}/ros_logs")
+  ament_add_pytest_test(
+    test_battery_contract tests/test_battery_contract.py TIMEOUT 120 ENV
+    "ROS_LOG_DIR=${CMAKE_BINARY_DIR}/ros_logs")
 endif()
 
 ament_package()

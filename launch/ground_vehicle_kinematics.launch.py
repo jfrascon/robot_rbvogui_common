@@ -1,3 +1,5 @@
+"""Start four-swerve kinematics with RB-VOGUI namespace and frame-prefix conventions."""
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
@@ -9,7 +11,7 @@ import ros2_launch_helpers as rlh
 
 
 def generate_launch_description() -> LaunchDescription:
-    """Declare the robot-scoped inputs used to start the RB-VOGUI kinematics node."""
+    """Declare public robot-scoped inputs and include the generic four-swerve implementation."""
     return LaunchDescription(
         [
             DeclareLaunchArgument('namespace', default_value='', description='Project namespace.'),

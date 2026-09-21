@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <robot name="rbvogui_common" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!--
-  Common xacro file for the RB-VOGUI robot with 4 steerable wheels.
-  THIS FILE IS NOT A COMPLETE ROBOT MODEL, IT IS MEANT TO BE INCLUDED IN THE SPECIFIC ROBOT MODEL
-  XACRO FILES (FOR EXAMPLE, MODEL_BASE.XACRO AND MODEL_FORKLIFT.XACRO).
+  Shared RB-VOGUI mobile-base Xacro for four steerable wheels.
+  This file is not a complete robot model. Entry-point Xacros such as model_base.xacro and
+  model_forklift.xacro include it, then add their own links, sensors, actuators, and Gazebo plugins.
 
   The base is composed of the RB-VOGUI chassis, battery and four steerable wheels:
   - Front-left wheel uses angle +alpha.
@@ -446,6 +446,59 @@
 
   <xacro:if value="${sim_file != ''}">
     <gazebo>
+      <xacro:property name="battery_sim_cfg" value="${sim_cfg.get('battery', dict())}"/>
+
+      <xacro:if value="${battery_sim_cfg.get('enabled', False)}">
+        <xacro:property name="battery_voltage" value="${battery_sim_cfg.get('voltage', '')}"/>
+        <xacro:property name="battery_capacity" value="${battery_sim_cfg.get('capacity', '')}"/>
+        <xacro:property name="battery_power_load" value="${battery_sim_cfg.get('power_load', '')}"/>
+
+        <xacro:if value="${battery_voltage == ''}">
+          ${xacro.fatal("battery.voltage is required when battery.enabled is true")}
+        </xacro:if>
+        <xacro:if value="${battery_capacity == ''}">
+          ${xacro.fatal("battery.capacity is required when battery.enabled is true")}
+        </xacro:if>
+        <xacro:if value="${battery_power_load == ''}">
+          ${xacro.fatal("battery.power_load is required when battery.enabled is true")}
+        </xacro:if>
+
+        <xacro:property name="battery_power_draining_topic"
+                        value="${battery_sim_cfg.get('power_draining_topic', '')}"/>
+        <xacro:if value="${battery_power_draining_topic != ''}">
+          <xacro:resolve_topic prop_id="battery_power_draining_topic"
+                               topic="${battery_power_draining_topic}"
+                               namespace="${robot_namespace}"/>
+        </xacro:if>
+
+        <xacro:property name="battery_stop_power_draining_topic"
+                        value="${battery_sim_cfg.get('stop_power_draining_topic', '')}"/>
+        <xacro:if value="${battery_stop_power_draining_topic != ''}">
+          <xacro:resolve_topic prop_id="battery_stop_power_draining_topic"
+                               topic="${battery_stop_power_draining_topic}"
+                               namespace="${robot_namespace}"/>
+        </xacro:if>
+
+        <xacro:plugin_linear_battery
+          name="main_battery"
+          voltage="${battery_voltage}"
+          capacity="${battery_capacity}"
+          power_load="${battery_power_load}"
+          fix_issue_225="${battery_sim_cfg.get('fix_issue_225', True)}"
+          open_circuit_voltage_constant_coef="${battery_sim_cfg.get('open_circuit_voltage_constant_coef', '')}"
+          open_circuit_voltage_linear_coef="${battery_sim_cfg.get('open_circuit_voltage_linear_coef', '')}"
+          initial_charge="${battery_sim_cfg.get('initial_charge', '')}"
+          resistance="${battery_sim_cfg.get('resistance', '')}"
+          smooth_current_tau="${battery_sim_cfg.get('smooth_current_tau', '')}"
+          invert_current_sign="${battery_sim_cfg.get('invert_current_sign', '')}"
+          start_draining="${battery_sim_cfg.get('start_draining', '')}"
+          power_draining_topic="${battery_power_draining_topic}"
+          stop_power_draining_topic="${battery_stop_power_draining_topic}"
+          enable_recharge="${battery_sim_cfg.get('enable_recharge', '')}"
+          charging_time="${battery_sim_cfg.get('charging_time', '')}"
+          recharge_by_topic="${battery_sim_cfg.get('recharge_by_topic', '')}"/>
+      </xacro:if>
+
       <!--
       To find the reference for the system Gazebo plugins:
       1. Go to: https://gazebosim.org/libs/

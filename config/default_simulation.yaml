@@ -2,6 +2,53 @@
 # If you need to customize the simulation configuration, create a new file and pass it as a value
 # for the parameter 'sim_file' in the used launch file.
 
+# Parameters for a basic functional battery:
+# - `voltage` is the initial battery voltage in volts.
+# - `capacity` is the total charge that the battery can hold in ampere-hours.
+# - `power_load` is the battery power load in watts.
+# - `fix_issue_225` enables Gazebo's corrected battery state-of-charge behavior.
+#   With this flag set:
+#     battery_runtime_hours = capacity_Ah * voltage_V / power_load_W
+#   With this flag unset:
+#     battery_runtime_hours = capacity_Ah * voltage_V / (power_load_W * 100)
+#
+# Ideal battery with no discharge:
+# - To publish battery state while keeping an ideal infinite battery, set `power_load` to `0.0`.
+#   The plugin then publishes the state while the stored charge remains constant.
+# - Keep `voltage` positive. The plugin computes current from power divided by voltage.
+#
+# Parameters for a more realistic battery:
+# Use the basic parameters above and add any of the following fields when needed.
+# - `open_circuit_voltage_constant_coef` is the voltage at full charge in volts. If omitted, the
+#   macro uses the same value as `voltage`.
+# - `open_circuit_voltage_linear_coef` is the voltage decrease when the battery has no charge.
+# - `initial_charge` is the initial charge in ampere-hours.
+# - `resistance` is the internal resistance in ohms.
+# - `smooth_current_tau` is the current smoothing coefficient.
+# - `invert_current_sign` flips the current sign reported in the battery state message.
+# - `start_draining` starts power draining when the simulation begins.
+# - `power_draining_topic` starts power draining when it receives a message.
+# - `stop_power_draining_topic` stops power draining when it receives a message.
+#
+# Charging:
+# - `enable_recharge` enables battery recharging.
+# - `charging_time` is the number of hours needed to fully charge the battery with no load.
+# - When `recharge_by_topic` is true, the plugin subscribes to Gazebo Transport topics that start
+#   and stop recharge.
+# - Gazebo exposes recharge services at these paths when recharge is enabled:
+#   `/model/<model_name>/battery/main_battery/recharge/start`
+#   `/model/<model_name>/battery/main_battery/recharge/stop`
+#
+# Gazebo publishes the battery state at:
+# `/model/<model_name>/battery/main_battery/state`
+# `launch/bridge.launch.py` forwards it to `main_battery/state` in the robot ROS namespace.
+battery:
+  enabled: true
+  voltage: 24.0
+  capacity: 20.0
+  power_load: 0.0
+  fix_issue_225: true
+
 # Plugin to control the mobile base in velocity.
 base_velocity_controller:
   enabled: true
