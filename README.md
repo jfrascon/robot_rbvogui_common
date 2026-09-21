@@ -124,3 +124,10 @@ ros2 launch robot_rbvogui_common render_robot_urdf.launch.py \
   robot_urdf_file:=/tmp/rbvogui_base.urdf
 check_urdf /tmp/rbvogui_base.urdf
 ```
+
+## Derived model examples
+
+The following packages build on `robot_rbvogui_common`:
+
+- [robot_rbvogui_basket_layout_a](https://github.com/jfrascon/robot_rbvogui_basket_layout_a.git)
+- [robot_rbvogui_forklift](https://github.com/jfrascon/robot_rbvogui_forklift.git)
