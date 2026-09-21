@@ -5,7 +5,7 @@
   THIS FILE IS NOT A COMPLETE ROBOT MODEL, IT IS MEANT TO BE INCLUDED IN THE SPECIFIC ROBOT MODEL
   XACRO FILES (FOR EXAMPLE, MODEL_BASE.XACRO AND MODEL_FORKLIFT.XACRO).
 
-  The base is composed of the chassis body and four steerable wheels:
+  The base is composed of the RB-VOGUI chassis, battery and four steerable wheels:
   - Front-left wheel uses angle +alpha.
     (x_0 = d*cos(+alpha), y_0 = d*sin(+alpha))
   - Front-right wheel uses angle -alpha.
@@ -16,15 +16,14 @@
     (-x_0, -y_0)
   Reference: package://ground_vehicle_kinematics/doc/kinematics_en.pdf
 
-  - The chassis body is always represented as a box for visual and collision.
+  - The chassis uses the RB-VOGUI DAE mesh for visual and the matching STL mesh for collision.
+  - The optional basket uses the RB-VOGUI std_basket mounting position.
   - Dynamics are intentionally simplified.
 
-  Belly:
-  The belly is a heavy box located below the chassis.
-  It is always present in this model.
-  Its main purpose is to keep the center of mass low and improve stability.
-  The belly frame is centered with the chassis frame.
-  The base_link is always placed at the center of the bottom face of the chassis.
+  Battery:
+  The battery uses the RB-VOGUI battery STL mesh for visual and collision.
+  It is always present in this model and keeps the center of mass low.
+  The base, chassis and battery links follow the RB-VOGUI frame layout.
   -->
 
   <!-- ===================================================================== -->
@@ -35,6 +34,7 @@
   <xacro:include filename="$(find robotics_description)/urdf/wheels/all_wheels.xacro"/>
   <xacro:include filename="$(find robotics_description)/urdf/wheels/generic_macros/all_wheels_plugins.xacro"/>
   <xacro:include filename="$(find robotics_description)/urdf/gz_system_plugins/all_gz_system_plugins.xacro"/>
+  <xacro:include filename="$(find robotics_description)/urdf/extras/basket/basket_macros.xacro"/>
 
   <!-- ===================================================================== -->
   <!-- ARGS -->
@@ -51,6 +51,8 @@
   <xacro:arg name="body_use_visual"        default="True"/>
   <xacro:arg name="body_use_collision"     default="True"/>
   <xacro:arg name="body_use_inertial"      default="True"/>
+  <xacro:arg name="use_basket_chassis"     default="True"/>
+  <xacro:arg name="use_basket_full"        default="False"/>
   <xacro:arg name="s_wheel_use_visual"     default="True"/>
   <xacro:arg name="s_wheel_use_v_mesh"     default="True"/>
   <xacro:arg name="s_wheel_color"          default="0.1 0.1 0.1 1.0"/>
@@ -85,8 +87,10 @@
                   value="${xacro.load_yaml(sim_file) if sim_file != '' else dict()}"/>
 
   <!--
-  The body geometry is fixed in this common file.
-  Only the body color and the decision to publish body inertia remain configurable xacro args.
+  The body geometry is fixed in this common file and follows the RB-VOGUI body meshes.
+  `body_color` is still validated for launch-interface compatibility, but the chassis DAE keeps
+  its embedded material. The battery STL has no reliable material, so this model sets its color
+  explicitly below.
   -->
   <xacro:property name="body_color"        value="$(arg body_color)"/>
   <xacro:property name="body_color_values" value="${body_color.split()}"/>
@@ -98,18 +102,41 @@
   <xacro:property name="body_use_visual"    value="$(arg body_use_visual)"/>
   <xacro:property name="body_use_collision" value="$(arg body_use_collision)"/>
   <xacro:property name="body_use_inertial"  value="$(arg body_use_inertial)"/>
+  <xacro:property name="use_basket_chassis_raw" value="$(arg use_basket_chassis)"/>
+  <xacro:property name="use_basket_full_raw"    value="$(arg use_basket_full)"/>
+  <xacro:property name="use_basket_chassis"
+                  value="${str(use_basket_chassis_raw).strip().lower() in ('true', '1', 'yes')}"/>
+  <xacro:property name="use_basket_full"
+                  value="${str(use_basket_full_raw).strip().lower() in ('true', '1', 'yes')}"/>
 
-  <xacro:property name="top_body_size_x"    value="1.044"/>
-  <xacro:property name="top_body_size_y"    value="0.650"/>
-  <xacro:property name="top_body_size_z"    value="0.34"/>
-  <xacro:property name="top_body_mass"      value="25.0"/>
-  <xacro:property name="bottom_body_size_x" value="0.483037"/>
-  <xacro:property name="bottom_body_size_y" value="0.420000"/>
-  <xacro:property name="bottom_body_size_z" value="0.105000"/>
-  <xacro:property name="bottom_body_mass"   value="45"/>
-  <xacro:property name="ground_clearance"   value="0.191"/>
-  <xacro:property name="dist_to_wheels"     value="0.4366337137693332"/>
-  <xacro:property name="alpha_deg"          value="32.56180140948635"/>
+  <xacro:if value="${use_basket_chassis and use_basket_full}">
+    ${xacro.fatal(
+      "xacro args use_basket_chassis and use_basket_full cannot both be true"
+    )}
+  </xacro:if>
+
+  <xacro:property name="top_body_size_x"        value="1.044"/>
+  <xacro:property name="top_body_size_y"        value="0.650"/>
+  <xacro:property name="top_body_size_z"        value="0.235"/>
+  <xacro:property name="top_body_mass"          value="25.0"/>
+  <xacro:property name="bottom_body_size_x"     value="0.483037"/>
+  <xacro:property name="bottom_body_size_y"     value="0.420000"/>
+  <xacro:property name="bottom_body_size_z"     value="0.105000"/>
+  <xacro:property name="bottom_body_mass"       value="45"/>
+  <xacro:property name="ground_clearance"       value="0.1165"/>
+  <xacro:property name="dist_to_wheels"         value="0.4366337137693332"/>
+  <xacro:property name="alpha_deg"              value="32.56180140948635"/>
+  <xacro:property name="chassis_joint_origin"   value="-0.012 0 0.1775 0 0 0"/>
+  <xacro:property name="battery_joint_origin"   value="0.02952 0 0 0 0 0"/>
+  <xacro:property name="basket_joint_origin"    value="0.027732 0 0.2445 0 0 0"/>
+  <xacro:property name="body_mesh_scale"        value="1.0 1.0 1.0"/>
+  <xacro:property name="chassis_visual_mesh"    value="robot_vog/meshes/rbvogui_chassis.dae"/>
+  <xacro:property name="chassis_collision_mesh" value="robot_vog/meshes/rbvogui_chassis.stl"/>
+  <xacro:property name="battery_mesh"           value="robot_vog/meshes/rbvogui_battery.stl"/>
+  <xacro:property name="battery_color"
+                  value="${robot_prefix}battery_color 0.08235 0.08235 0.08235 1.0"/>
+  <xacro:property name="basket_color"
+                  value="${robot_prefix}basket_color 1.0 0.0 0.0 1.0"/>
 
   <xacro:property name="s_wheel_use_visual"   value="$(arg s_wheel_use_visual)"/>
   <xacro:property name="s_wheel_use_v_mesh"   value="$(arg s_wheel_use_v_mesh)"/>
@@ -205,16 +232,14 @@
   <xacro:property name="front_right_wheel_name" value="front_right_wheel"/>
   <xacro:property name="rear_left_wheel_name"   value="rear_left_wheel"/>
   <xacro:property name="rear_right_wheel_name"  value="rear_right_wheel"/>
-  <xacro:property name="body_visual_color"
-                  value="${robot_prefix + base_name + '_color ' + body_color}"/>
 
   <!-- ===================================================================== -->
-  <!-- Definition of links and joints for the rectangular base -->
+  <!-- Definition of links and joints for the RB-VOGUI base -->
   <!-- ===================================================================== -->
 
   <!--
-  The link '${base_name}_footprint_link' is located on the ground, just below the link
-  '${base_name}_link'.
+  The link '${base_name}_footprint_link' is located on the ground below '${base_name}_link'.
+  The '${base_name}_link' frame is placed at the wheel-center height, as in RB-VOGUI.
   -->
   <link name="${robot_prefix}${base_name}_footprint_link"/>
 
@@ -222,33 +247,30 @@
     <xacro:null_inertia/>
   </link>
 
-  <joint name="${robot_prefix}${base_name}_joint" type="fixed">
+  <joint name="${robot_prefix}${base_name}_footprint_joint" type="fixed">
     <parent link="${robot_prefix}${base_name}_footprint_link"/>
     <child link="${robot_prefix}${base_name}_link"/>
     <!--
     The origin of '${base_name}_footprint_link' is the ground projection of the robot base.
-    The origin of '${base_name}_link' is at the center of the lower body's bottom face, which is
-    `ground_clearance` meters above the footprint origin.
+    The origin of '${base_name}_link' is at the wheel-center height.
     The fixed joint has zero rotation, so both frames use the same X, Y and Z axis directions.
     -->
     <origin rpy="0 0 0" xyz="0 0 ${ground_clearance}"/>
   </joint>
 
-  <link name="${robot_prefix}${base_name}_top_link">
+  <link name="${robot_prefix}chassis_link">
     <xacro:if value="${body_use_visual}">
-      <xacro:visual_box
-        size="${top_body_size_x} ${top_body_size_y} ${top_body_size_z}"
-        color="${body_visual_color}"/>
+      <xacro:visual_mesh mesh="${chassis_visual_mesh}" scale="${body_mesh_scale}"/>
     </xacro:if>
 
     <xacro:if value="${body_use_collision}">
-      <xacro:collision_box size="${top_body_size_x} ${top_body_size_y} ${top_body_size_z}"/>
+      <xacro:collision_mesh mesh="${chassis_collision_mesh}" scale="${body_mesh_scale}"/>
     </xacro:if>
 
     <xacro:if value="${body_use_inertial}">
       <xacro:solid_box_inertia mass="${top_body_mass}"
                                size="${top_body_size_x} ${top_body_size_y} ${top_body_size_z}"
-                               origin="0 0 0 0 0 0"/>
+                               origin="0 0 0.10 0 0 0"/>
     </xacro:if>
 
     <xacro:unless value="${body_use_inertial}">
@@ -256,39 +278,36 @@
     </xacro:unless>
   </link>
 
-  <joint name="${robot_prefix}${base_name}_top_joint" type="fixed">
+  <joint name="${robot_prefix}chassis_joint" type="fixed">
     <parent link="${robot_prefix}${base_name}_link"/>
-    <child link="${robot_prefix}${base_name}_top_link"/>
+    <child link="${robot_prefix}chassis_link"/>
     <!--
-    The origin of '${base_name}_top_link' is at the geometric center of the upper body.
-    Starting at '${base_name}_link', the offset moves through the complete lower-body height and
-    then through half of the upper-body height.
-    The lower body is always present, so `bottom_body_size_z` is always part of this offset.
-    The fixed joint has zero rotation, so the upper-body frame keeps the base frame orientation.
+    RB-VOGUI places 'chassis_link' slightly forward of 'base_link' and above the wheel center.
+    The copied chassis meshes already contain their own Z extent, so the link origin matches the
+    mesh origin.
     -->
-    <origin rpy="0 0 0" xyz="0 0 ${bottom_body_size_z + (0.5 * top_body_size_z)}"/>
+    <xacro:origin_element origin="${chassis_joint_origin}"/>
   </joint>
 
   <!--
-  The belly is a box centered under the chassis.
-  It is always part of the model.
-  The belly inertia is enabled only when `body_use_inertial` is enabled.
+  The battery link follows RB-VOGUI and is mounted from 'chassis_link', not directly from
+  'base_link'. The battery STL extends below its own link origin.
   -->
-  <link name="${robot_prefix}${base_name}_bottom_link">
+  <link name="${robot_prefix}battery_link">
     <xacro:if value="${body_use_visual}">
-      <xacro:visual_box
-        size="${bottom_body_size_x} ${bottom_body_size_y} ${bottom_body_size_z}"
-        color="${body_visual_color}"/>
+      <xacro:visual_mesh mesh="${battery_mesh}"
+                         scale="${body_mesh_scale}"
+                         color="${battery_color}"/>
     </xacro:if>
 
     <xacro:if value="${body_use_collision}">
-      <xacro:collision_box size="${bottom_body_size_x} ${bottom_body_size_y} ${bottom_body_size_z}"/>
+      <xacro:collision_mesh mesh="${battery_mesh}" scale="${body_mesh_scale}"/>
     </xacro:if>
 
     <xacro:if value="${body_use_inertial}">
       <xacro:solid_box_inertia mass="${bottom_body_mass}"
         size="${bottom_body_size_x} ${bottom_body_size_y} ${bottom_body_size_z}"
-        origin="0 0 0 0 0 0"/>
+        origin="0 0 -0.05 0 0 0"/>
     </xacro:if>
 
     <xacro:unless value="${body_use_inertial}">
@@ -296,18 +315,36 @@
     </xacro:unless>
   </link>
 
-  <joint name="${robot_prefix}${base_name}_bottom_joint" type="fixed">
-    <parent link="${robot_prefix}${base_name}_link"/>
-    <child link="${robot_prefix}${base_name}_bottom_link"/>
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 ${0.5 * bottom_body_size_z}"/>
+  <joint name="${robot_prefix}battery_joint" type="fixed">
+    <parent link="${robot_prefix}chassis_link"/>
+    <child link="${robot_prefix}battery_link"/>
+    <xacro:origin_element origin="${battery_joint_origin}"/>
   </joint>
+
+  <!--
+  The basket mesh frame was moved to the center of its lower face. This offset preserves the old
+  RB-VOGUI std_basket visual position relative to chassis_link.
+  -->
+  <xacro:if value="${use_basket_chassis}">
+    <xacro:basket_chassis_macro prefix="${robot_prefix}"
+                                parent="${robot_prefix}chassis_link"
+                                joint_parent_fr_basket_fr="${basket_joint_origin}"
+                                color="${basket_color}"/>
+  </xacro:if>
+
+  <xacro:if value="${use_basket_full}">
+    <xacro:basket_full_macro prefix="${robot_prefix}"
+                             parent="${robot_prefix}chassis_link"
+                             joint_parent_fr_basket_fr="${basket_joint_origin}"
+                             basket_chassis_color="${basket_color}"/>
+  </xacro:if>
 
   <!--
   Definition of the steerable wheels.
   -->
 
-  <!-- Z coordinate of each steerable wheel relative to its parent frame. -->
-  <xacro:property name="z_s_wheel" value="${-ground_clearance + s_wheel_radius}"/>
+  <!-- RB-VOGUI places wheel steering frames at the same height as base_link. -->
+  <xacro:property name="z_s_wheel" value="0.0"/>
   <xacro:property name="d"         value="${float(dist_to_wheels)}"/>
   <xacro:property name="alpha"     value="${radians(float(alpha_deg))}"/>
   <xacro:property name="x_0"       value="${d * cos(alpha)}"/>

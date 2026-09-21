@@ -9,6 +9,8 @@ body_color: "0.5 0.5 0.5 1.0"
 body_use_visual: true
 body_use_collision: true
 body_use_inertial: true
+use_basket_chassis: true
+use_basket_full: false
 
 ###################################################################################################
 # Steerable wheels
