@@ -5,7 +5,6 @@ Use this launch file to inspect URDF/Xacro changes and Gazebo plugins without st
 simulation stack.
 """
 
-from functools import partial
 import json
 
 from launch import LaunchContext
@@ -51,14 +50,30 @@ def generate_launch_description() -> LaunchDescription:
             ),
         ),
         DeclareLaunchArgument(
+            'robot_xacro_args_file',
+            default_value=PathJoinSubstitution(
+                [FindPackageShare('robot_rbvogui_common'), 'config', 'default_xacro_args.yaml']
+            ),
+            description='YAML file with model-description xacro arguments.',
+        ),
+        DeclareLaunchArgument(
+            'robot_sim_file',
+            default_value=PathJoinSubstitution(
+                [FindPackageShare('robot_rbvogui_common'), 'config', 'default_simulation.yaml']
+            ),
+            description='Simulation YAML used while generating the robot description.',
+        ),
+        DeclareLaunchArgument(
+            'robot_bridge_config_file',
+            default_value=PathJoinSubstitution(
+                [FindPackageShare('robot_rbvogui_common'), 'config', 'default_bridge.yaml']
+            ),
+            description='ROS-Gazebo bridge configuration for this model.',
+        ),
+        DeclareLaunchArgument(
             'robot_params_file',
             default_value=PathJoinSubstitution(
-                [
-                    FindPackageShare('robot_rbvogui_common'),
-                    'config',
-                    'model_base',
-                    'default_params.yaml',
-                ]
+                [FindPackageShare('robot_rbvogui_common'), 'config', 'default_params.yaml']
             ),
             description='Complete robot parameter YAML file.',
         ),
@@ -67,42 +82,6 @@ def generate_launch_description() -> LaunchDescription:
             default_value='True',
             choices=['True', 'true', 'False', 'false'],
             description='Allow ROS launch substitutions in robot_params_file.',
-        ),
-        DeclareLaunchArgument(
-            'robot_xacro_args_file',
-            default_value=PathJoinSubstitution(
-                [
-                    FindPackageShare('robot_rbvogui_common'),
-                    'config',
-                    'model_base',
-                    'default_xacro_args.yaml',
-                ]
-            ),
-            description='YAML file with model-description xacro arguments.',
-        ),
-        DeclareLaunchArgument(
-            'robot_sim_file',
-            default_value=PathJoinSubstitution(
-                [
-                    FindPackageShare('robot_rbvogui_common'),
-                    'config',
-                    'model_base',
-                    'default_simulation.yaml',
-                ]
-            ),
-            description='Simulation YAML used while generating the robot description.',
-        ),
-        DeclareLaunchArgument(
-            'robot_bridge_config_file',
-            default_value=PathJoinSubstitution(
-                [
-                    FindPackageShare('robot_rbvogui_common'),
-                    'config',
-                    'model_base',
-                    'default_bridge.yaml',
-                ]
-            ),
-            description='ROS-Gazebo bridge configuration for this model.',
         ),
         DeclareLaunchArgument(
             'robot_rsp_node_args',
@@ -252,8 +231,9 @@ def _include_robot_state_publisher(ctx: LaunchContext) -> list[LaunchDescription
             ),
             launch_arguments={
                 'namespace': LaunchConfiguration('namespace'),
-                'robot_model': 'base',
-                'robot_description_package': 'robot_rbvogui_common',
+                'robot_xacro_file': PathJoinSubstitution(
+                    [FindPackageShare('robot_rbvogui_common'), 'urdf', 'model_base.xacro']
+                ),
                 'robot_name': LaunchConfiguration('robot_name'),
                 'robot_rsp_params_file': LaunchConfiguration('resolved_robot_params_file'),
                 'robot_rsp_params_file_allow_substs': 'False',
@@ -303,7 +283,9 @@ def _launch_spawn_sequence(
         RegisterEventHandler(
             OnProcessExit(
                 target_action=spawn_model,
-                on_exit=partial(_launch_after_spawn, after_spawn_actions=after_spawn_actions),
+                on_exit=lambda event, context: _launch_after_spawn(
+                    event, context, after_spawn_actions=after_spawn_actions
+                ),
             )
         ),
         LogInfo(

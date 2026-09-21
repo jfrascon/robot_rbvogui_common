@@ -26,7 +26,7 @@ def _load_launch_module() -> ModuleType:
 def test_build_xacro_command_accepts_file_uri_for_optional_arguments() -> None:
     module = _load_launch_module()
     xacro_file = PACKAGE_DIR / 'urdf' / 'model_base.xacro'
-    xacro_args_file = PACKAGE_DIR / 'config' / 'model_base' / 'default_xacro_args.yaml'
+    xacro_args_file = PACKAGE_DIR / 'config' / 'default_xacro_args.yaml'
 
     command = module._build_xacro_command(str(xacro_file), xacro_args_file.as_uri(), '')
 
@@ -84,10 +84,8 @@ def test_launch_node_delegates_params_rendering_to_parameter_file(
     allow_substs: bool, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     module = _load_launch_module()
-    package_share = tmp_path / 'robot_rbvogui_common'
-    xacro_file = package_share / 'urdf' / 'model_base.xacro'
+    xacro_file = tmp_path / 'model_base.xacro'
     params_file = tmp_path / 'params.yaml'
-    xacro_file.parent.mkdir(parents=True)
     xacro_file.touch()
     params_file.write_text('/**:\n  ros__parameters: {}\n', encoding='utf-8')
 
@@ -106,9 +104,6 @@ def test_launch_node_delegates_params_rendering_to_parameter_file(
         def __init__(self, **_kwargs: object) -> None:
             pass
 
-    monkeypatch.setattr(
-        module, 'get_package_share_directory', lambda _package_name: str(package_share)
-    )
     monkeypatch.setattr(module, 'ParameterFile', parameter_file)
     monkeypatch.setattr(module, '_build_xacro_command', build_xacro_command)
     monkeypatch.setattr(module, 'Node', FakeNode)
@@ -118,8 +113,7 @@ def test_launch_node_delegates_params_rendering_to_parameter_file(
         {
             'robot_rsp_params_file': str(params_file),
             'robot_rsp_params_file_allow_substs': str(allow_substs),
-            'robot_model': 'base',
-            'robot_description_package': 'robot_rbvogui_common',
+            'robot_xacro_file': str(xacro_file),
             'robot_xacro_args_file': '',
             'robot_sim_file': '',
             'use_sim_time': 'False',

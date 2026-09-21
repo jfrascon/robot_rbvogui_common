@@ -2,7 +2,6 @@ from pathlib import Path
 import shlex
 from typing import Any
 
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchContext
 from launch import LaunchDescription
 from launch import LaunchDescriptionEntity
@@ -25,26 +24,10 @@ def generate_launch_description() -> LaunchDescription:
     return LaunchDescription(
         [
             DeclareLaunchArgument('namespace', default_value='', description='Project namespace'),
-            DeclareLaunchArgument('robot_model', description='Robot model to publish'),
-            DeclareLaunchArgument(
-                'robot_description_package',
-                default_value='robot_rbvogui_common',
-                description='Package that owns the selected model xacro file.',
-            ),
             DeclareLaunchArgument('robot_name', description='The unique name for the robot'),
             DeclareLaunchArgument(
-                'robot_rsp_params_file',
-                description='Path to the complete robot parameter YAML file.',
-            ),
-            DeclareLaunchArgument(
-                'robot_rsp_params_file_allow_substs',
-                choices=['True', 'true', 'False', 'false'],
-                description='Allow ROS launch substitutions in robot_rsp_params_file',
-            ),
-            DeclareLaunchArgument(
-                'use_sim_time',
-                choices=['True', 'true', 'False', 'false'],
-                description='Use ROS time from /clock if true.',
+                'robot_xacro_file',
+                description='Path to the Xacro file that generates the robot description.',
             ),
             DeclareLaunchArgument(
                 'robot_xacro_args_file',
@@ -62,11 +45,26 @@ def generate_launch_description() -> LaunchDescription:
                 ),
             ),
             DeclareLaunchArgument(
+                'robot_rsp_params_file',
+                description='Path to the complete robot parameter YAML file.',
+            ),
+            DeclareLaunchArgument(
+                'robot_rsp_params_file_allow_substs',
+                choices=['True', 'true', 'False', 'false'],
+                description='Allow ROS launch substitutions in robot_rsp_params_file',
+            ),
+            DeclareLaunchArgument(
+                'use_sim_time',
+                choices=['True', 'true', 'False', 'false'],
+                description='Use ROS time from /clock if true.',
+            ),
+            DeclareLaunchArgument(
                 'node_args',
                 default_value='{"output":"both","ros_arguments":["--log-level","info"]}',
                 description=rlh.LAUNCH_ACTION_ARGUMENTS_DESC,
             ),
             rlh.RequireFile(path=LaunchConfiguration('robot_rsp_params_file')),
+            rlh.RequireFile(path=LaunchConfiguration('robot_xacro_file')),
             # Insert `robot_type`, `robot_namespace` and `robot_prefix` into the launch context.
             # Their values can then be substituted in the parameter file if needed.
             SetLaunchConfiguration('robot_type', 'rbvogui'),
@@ -150,16 +148,7 @@ def _launch_node(ctx: LaunchContext) -> list[LaunchDescriptionEntity]:
         bool,
     )
 
-    robot_model = LaunchConfiguration('robot_model').perform(ctx)
-    robot_description_package = LaunchConfiguration('robot_description_package').perform(ctx)
-
-    # Get the xacro file for the selected model.
-    xacro_file = Path(get_package_share_directory(robot_description_package)).joinpath(
-        'urdf', f'model_{robot_model}.xacro'
-    )
-
-    # Get the robot xacro arguments file from the launch configuration, if present.
-    # It is an optional YAML file that contains xacro arguments loaded from configuration.
+    robot_xacro_file = LaunchConfiguration('robot_xacro_file').perform(ctx).strip()
     robot_xacro_args_file = LaunchConfiguration('robot_xacro_args_file').perform(ctx).strip()
     robot_sim_file = LaunchConfiguration('robot_sim_file').perform(ctx).strip()
 
@@ -176,7 +165,7 @@ def _launch_node(ctx: LaunchContext) -> list[LaunchDescriptionEntity]:
                     'robot_description': ParameterValue(
                         Command(
                             _build_xacro_command(
-                                str(xacro_file), robot_xacro_args_file, robot_sim_file
+                                robot_xacro_file, robot_xacro_args_file, robot_sim_file
                             )
                         ),
                         value_type=str,
