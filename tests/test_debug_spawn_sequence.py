@@ -30,7 +30,7 @@ def test_spawn_process_registers_exit_handler_before_starting(launch_file: str) 
     module = _load_launch_module(launch_file)
     ctx = LaunchContext()
     ctx.launch_configurations['namespace'] = '/sim_debug'
-    ctx.launch_configurations['robot_name'] = 'vog'
+    ctx.launch_configurations['robot_name'] = 'rbvogui'
     ctx.launch_configurations['robot_description_topic'] = 'robot_description'
 
     actions = module._launch_spawn_sequence(ctx, after_spawn_actions=[])

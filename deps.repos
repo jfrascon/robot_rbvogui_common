@@ -1,9 +1,4 @@
 repositories:
-    joint_position_controller_server:
-        type: git
-        url: https://github.com/jfrascon/joint_position_controller_server.git
-        version: acf5f24b8621f74ff3a8848547db84068b8a7820
-        #exclude: [] # list of repos files inside repository_path to exclude (optional)
     ground_vehicle_kinematics:
         type: git
         url: https://github.com/jfrascon/ground_vehicle_kinematics.git

@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>robot_vog</name>
+  <name>robot_rbvogui_common</name>
   <version>1.0.0</version>
   <description>
-    Robot descriptions, launch files, and deployment configuration for the VOG robot family
+    Common robot descriptions, launch files, and deployment configuration for the RB-VOGUI robot
+    family
   </description>
   <maintainer email="jfrascon@gmail.com">Juan Francisco Rascon Crespo</maintainer>
   <license>Apache-2.0</license>
@@ -13,7 +14,6 @@
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>ground_vehicle_kinematics</exec_depend>
-  <exec_depend>joint_position_controller_server</exec_depend>
   <exec_depend>robotics_description</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<robot name="robot_vog_common" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="rbvogui_common" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!--
-  Common xacro file for the VOG robot with 4 steerable wheels.
+  Common xacro file for the RB-VOGUI robot with 4 steerable wheels.
   THIS FILE IS NOT A COMPLETE ROBOT MODEL, IT IS MEANT TO BE INCLUDED IN THE SPECIFIC ROBOT MODEL
   XACRO FILES (FOR EXAMPLE, MODEL_BASE.XACRO AND MODEL_FORKLIFT.XACRO).
 
@@ -17,7 +17,6 @@
   Reference: package://ground_vehicle_kinematics/doc/kinematics_en.pdf
 
   - The chassis uses the RB-VOGUI DAE mesh for visual and the matching STL mesh for collision.
-  - The optional basket uses the RB-VOGUI std_basket mounting position.
   - Dynamics are intentionally simplified.
 
   Battery:
@@ -34,13 +33,12 @@
   <xacro:include filename="$(find robotics_description)/urdf/wheels/all_wheels.xacro"/>
   <xacro:include filename="$(find robotics_description)/urdf/wheels/generic_macros/all_wheels_plugins.xacro"/>
   <xacro:include filename="$(find robotics_description)/urdf/gz_system_plugins/all_gz_system_plugins.xacro"/>
-  <xacro:include filename="$(find robotics_description)/urdf/extras/basket/basket_macros.xacro"/>
 
   <!-- ===================================================================== -->
   <!-- ARGS -->
   <!-- ===================================================================== -->
   <xacro:arg name="namespace"    default=""/>
-  <xacro:arg name="robot_name"   default="vog"/>
+  <xacro:arg name="robot_name"   default="rbvogui"/>
   <!--
   File containing the simulation configuration for the selected robot model.
   If it is empty, no simulation YAML is loaded from this file.
@@ -51,8 +49,6 @@
   <xacro:arg name="body_use_visual"        default="True"/>
   <xacro:arg name="body_use_collision"     default="True"/>
   <xacro:arg name="body_use_inertial"      default="True"/>
-  <xacro:arg name="use_basket_chassis"     default="True"/>
-  <xacro:arg name="use_basket_full"        default="False"/>
   <xacro:arg name="s_wheel_use_visual"     default="True"/>
   <xacro:arg name="s_wheel_use_v_mesh"     default="True"/>
   <xacro:arg name="s_wheel_color"          default="0.1 0.1 0.1 1.0"/>
@@ -102,19 +98,6 @@
   <xacro:property name="body_use_visual"    value="$(arg body_use_visual)"/>
   <xacro:property name="body_use_collision" value="$(arg body_use_collision)"/>
   <xacro:property name="body_use_inertial"  value="$(arg body_use_inertial)"/>
-  <xacro:property name="use_basket_chassis_raw" value="$(arg use_basket_chassis)"/>
-  <xacro:property name="use_basket_full_raw"    value="$(arg use_basket_full)"/>
-  <xacro:property name="use_basket_chassis"
-                  value="${str(use_basket_chassis_raw).strip().lower() in ('true', '1', 'yes')}"/>
-  <xacro:property name="use_basket_full"
-                  value="${str(use_basket_full_raw).strip().lower() in ('true', '1', 'yes')}"/>
-
-  <xacro:if value="${use_basket_chassis and use_basket_full}">
-    ${xacro.fatal(
-      "xacro args use_basket_chassis and use_basket_full cannot both be true"
-    )}
-  </xacro:if>
-
   <xacro:property name="top_body_size_x"        value="1.044"/>
   <xacro:property name="top_body_size_y"        value="0.650"/>
   <xacro:property name="top_body_size_z"        value="0.235"/>
@@ -128,15 +111,12 @@
   <xacro:property name="alpha_deg"              value="32.56180140948635"/>
   <xacro:property name="chassis_joint_origin"   value="-0.012 0 0.1775 0 0 0"/>
   <xacro:property name="battery_joint_origin"   value="0.02952 0 0 0 0 0"/>
-  <xacro:property name="basket_joint_origin"    value="0.027732 0 0.2445 0 0 0"/>
   <xacro:property name="body_mesh_scale"        value="1.0 1.0 1.0"/>
-  <xacro:property name="chassis_visual_mesh"    value="robot_vog/meshes/rbvogui_chassis.dae"/>
-  <xacro:property name="chassis_collision_mesh" value="robot_vog/meshes/rbvogui_chassis.stl"/>
-  <xacro:property name="battery_mesh"           value="robot_vog/meshes/rbvogui_battery.stl"/>
+  <xacro:property name="chassis_visual_mesh"    value="robot_rbvogui_common/meshes/rbvogui_chassis.dae"/>
+  <xacro:property name="chassis_collision_mesh" value="robot_rbvogui_common/meshes/rbvogui_chassis.stl"/>
+  <xacro:property name="battery_mesh"           value="robot_rbvogui_common/meshes/rbvogui_battery.stl"/>
   <xacro:property name="battery_color"
                   value="${robot_prefix}battery_color 0.08235 0.08235 0.08235 1.0"/>
-  <xacro:property name="basket_color"
-                  value="${robot_prefix}basket_color 1.0 0.0 0.0 1.0"/>
 
   <xacro:property name="s_wheel_use_visual"   value="$(arg s_wheel_use_visual)"/>
   <xacro:property name="s_wheel_use_v_mesh"   value="$(arg s_wheel_use_v_mesh)"/>
@@ -320,24 +300,6 @@
     <child link="${robot_prefix}battery_link"/>
     <xacro:origin_element origin="${battery_joint_origin}"/>
   </joint>
-
-  <!--
-  The basket mesh frame was moved to the center of its lower face. This offset preserves the old
-  RB-VOGUI std_basket visual position relative to chassis_link.
-  -->
-  <xacro:if value="${use_basket_chassis}">
-    <xacro:basket_chassis_macro prefix="${robot_prefix}"
-                                parent="${robot_prefix}chassis_link"
-                                joint_parent_fr_basket_fr="${basket_joint_origin}"
-                                color="${basket_color}"/>
-  </xacro:if>
-
-  <xacro:if value="${use_basket_full}">
-    <xacro:basket_full_macro prefix="${robot_prefix}"
-                             parent="${robot_prefix}chassis_link"
-                             joint_parent_fr_basket_fr="${basket_joint_origin}"
-                             basket_chassis_color="${basket_color}"/>
-  </xacro:if>
 
   <!--
   Definition of the steerable wheels.

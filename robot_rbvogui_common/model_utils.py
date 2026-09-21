@@ -3,15 +3,15 @@ from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 
 
-def get_models() -> list[str]:
+def get_models(package_name: str = 'robot_rbvogui_common') -> list[str]:
     """
     Return the public robot model names available in this package.
 
-    Public model xacro files use the path `urdf/models/model_<robot_model>.xacro`.
+    Public model xacro files use the path `urdf/model_<robot_model>.xacro`.
     Launch files use the short model name, such as `base` or `forklift`.
     """
     model_file_prefix = 'model_'
-    urdf_dir = Path(get_package_share_directory('robot_vog')).joinpath('urdf', 'models')
+    urdf_dir = Path(get_package_share_directory(package_name)).joinpath('urdf')
 
     if not urdf_dir.is_dir():
         raise FileNotFoundError(f'URDF directory {urdf_dir!r} does not exist.')

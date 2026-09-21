@@ -19,16 +19,17 @@ from launch_ros.descriptions import ParameterFile
 from launch_ros.descriptions import ParameterValue
 import ros2_launch_helpers as rlh
 
-from robot_vog.model_utils import get_models
-
 
 def generate_launch_description() -> LaunchDescription:
     # Launch arguments with no default value must be provided by the caller.
     return LaunchDescription(
         [
             DeclareLaunchArgument('namespace', default_value='', description='Project namespace'),
+            DeclareLaunchArgument('robot_model', description='Robot model to publish'),
             DeclareLaunchArgument(
-                'robot_model', choices=get_models(), description='Robot model to publish'
+                'robot_description_package',
+                default_value='robot_rbvogui_common',
+                description='Package that owns the selected model xacro file.',
             ),
             DeclareLaunchArgument('robot_name', description='The unique name for the robot'),
             DeclareLaunchArgument(
@@ -68,7 +69,7 @@ def generate_launch_description() -> LaunchDescription:
             rlh.RequireFile(path=LaunchConfiguration('robot_rsp_params_file')),
             # Insert `robot_type`, `robot_namespace` and `robot_prefix` into the launch context.
             # Their values can then be substituted in the parameter file if needed.
-            SetLaunchConfiguration('robot_type', 'vog'),
+            SetLaunchConfiguration('robot_type', 'rbvogui'),
             rlh.SetRobotNamespace(
                 namespace=LaunchConfiguration('namespace'),
                 robot_name=LaunchConfiguration('robot_name'),
@@ -150,10 +151,11 @@ def _launch_node(ctx: LaunchContext) -> list[LaunchDescriptionEntity]:
     )
 
     robot_model = LaunchConfiguration('robot_model').perform(ctx)
+    robot_description_package = LaunchConfiguration('robot_description_package').perform(ctx)
 
     # Get the xacro file for the selected model.
-    xacro_file = Path(get_package_share_directory('robot_vog')).joinpath(
-        'urdf', 'models', f'model_{robot_model}.xacro'
+    xacro_file = Path(get_package_share_directory(robot_description_package)).joinpath(
+        'urdf', f'model_{robot_model}.xacro'
     )
 
     # Get the robot xacro arguments file from the launch configuration, if present.

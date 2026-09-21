@@ -1,36 +1,24 @@
 <?xml version="1.0"?>
-<!--
-  This file publishes the `forklift` model of the `robot_vog` family.
-  The robot name inside the URDF stays `vog_forklift`.
-
-  This model extends the common VOG platform with the forklift module.
-  The forklift module contains:
-  - A simple fork.
-  - A realsense d435 camera (rgbd) mounted on the fork.
-  - A Robosense Airy lidar mounted on the back of the robot.
-  - A Robosense Airy lidar mounted on the front of the robot.
-  - A front bottom lidar mounted on the robot body.
--->
-<robot name="vog_forklift" xmlns:xacro="http://www.ros.org/wiki/xacro">
-
-  <!-- ===================================================================== -->
-  <!-- INCLUDES -->
-  <!-- ===================================================================== -->
-
-  <xacro:include filename="$(find robot_vog)/urdf/includes/common.xacro"/>
-  <xacro:include filename="$(find robot_vog)/urdf/includes/fork_simple_module.xacro"/>
+<robot name="rbvogui_base" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!--
-  The fork module creates the fork itself and the sensors mounted on it or above the body.
-  This model file only adds the Gazebo joint state publisher for the full assembled robot.
+  This file publishes the `base` model of the `robot_rbvogui_common` family.
+  The robot name inside the URDF stays `rbvogui_base`.
   -->
+  <xacro:include filename="$(find robot_rbvogui_common)/urdf/common.xacro"/>
+
+  <!-- A non-empty sim_file adds the simulation-only joint-state publisher. -->
   <xacro:if value="${sim_file != ''}">
     <gazebo>
+      <!--
+      Define a 'JointStatePublisher' Gazebo plugin to report the states of the joints.
+      -->
       <xacro:property name="joint_state_publisher_sim_cfg"
                       value="${sim_cfg.get('joint_state_publisher', dict())}"/>
 
       <xacro:if value="${joint_state_publisher_sim_cfg.get('enabled', False)}">
-        <xacro:property name="js_topic" value="${joint_state_publisher_sim_cfg.get('topic', '')}"/>
+        <xacro:property name="js_topic"
+                        value="${joint_state_publisher_sim_cfg.get('topic', '')}"/>
 
         <xacro:if value="${js_topic == ''}">
           ${xacro.fatal(
@@ -44,7 +32,6 @@
 
           <xacro:plugin_joint_state_publisher topic="${resolved_js_topic}">
             <joint_names>
-              <joint_name>${robot_prefix}${fork_name}_carriage_joint</joint_name>
               <joint_name>${robot_prefix}${front_left_wheel_name}_steering_joint</joint_name>
               <joint_name>${robot_prefix}${front_left_wheel_name}_rotation_joint</joint_name>
               <joint_name>${robot_prefix}${front_right_wheel_name}_steering_joint</joint_name>

@@ -1,4 +1,4 @@
-# Default xacro arguments for the VOG base model.
+# Default xacro arguments for the RB-VOGUI base model.
 # Runtime arguments such as namespace, robot_name, and sim_file are provided by launch files.
 
 ###################################################################################################
@@ -9,9 +9,6 @@ body_color: "0.5 0.5 0.5 1.0"
 body_use_visual: true
 body_use_collision: true
 body_use_inertial: true
-use_basket_chassis: true
-use_basket_full: false
-
 ###################################################################################################
 # Steerable wheels
 ###################################################################################################

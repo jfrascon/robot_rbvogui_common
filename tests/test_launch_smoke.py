@@ -25,7 +25,10 @@ from conftest import run_bash
     ],
 )
 def test_robot_launch_smoke(launch_file: str, launch_args: str, expected_text: str) -> None:
-    result = run_bash(f'timeout --signal=INT 8s ros2 launch robot_vog {launch_file} {launch_args}')
+    command = (
+        f'timeout --signal=INT 8s ros2 launch robot_rbvogui_common {launch_file} {launch_args}'
+    )
+    result = run_bash(command)
 
     output = result.stdout + result.stderr
 

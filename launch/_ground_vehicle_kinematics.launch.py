@@ -9,12 +9,12 @@ import ros2_launch_helpers as rlh
 
 
 def generate_launch_description() -> LaunchDescription:
-    """Declare the robot-scoped inputs used to start the VOG kinematics node."""
+    """Declare the robot-scoped inputs used to start the RB-VOGUI kinematics node."""
     return LaunchDescription(
         [
             DeclareLaunchArgument('namespace', default_value='', description='Project namespace.'),
             DeclareLaunchArgument(
-                'robot_name', default_value='vog', description='Unique robot name.'
+                'robot_name', default_value='rbvogui', description='Unique robot name.'
             ),
             DeclareLaunchArgument(
                 'robot_params_file', description='Complete robot parameter YAML file.'

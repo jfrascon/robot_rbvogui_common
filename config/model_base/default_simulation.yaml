@@ -1,4 +1,4 @@
-# This file shows the full simulation configuration for the `base` model of the `vog` robot.
+# This file shows the full simulation configuration for the `base` model of the `rbvogui` robot.
 # If you need to customize the simulation configuration, create a new file and pass it as a value
 # for the parameter 'sim_file' in the used launch file.
 

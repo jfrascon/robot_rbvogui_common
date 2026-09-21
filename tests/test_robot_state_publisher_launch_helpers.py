@@ -12,7 +12,9 @@ from conftest import PACKAGE_DIR
 
 def _load_launch_module() -> ModuleType:
     path = PACKAGE_DIR / 'launch' / '_robot_state_publisher.launch.py'
-    spec = importlib.util.spec_from_file_location('robot_vog_robot_state_publisher_launch', path)
+    spec = importlib.util.spec_from_file_location(
+        'robot_rbvogui_common_robot_state_publisher_launch', path
+    )
     assert spec is not None
     assert spec.loader is not None
 
@@ -23,7 +25,7 @@ def _load_launch_module() -> ModuleType:
 
 def test_build_xacro_command_accepts_file_uri_for_optional_arguments() -> None:
     module = _load_launch_module()
-    xacro_file = PACKAGE_DIR / 'urdf' / 'models' / 'model_base.xacro'
+    xacro_file = PACKAGE_DIR / 'urdf' / 'model_base.xacro'
     xacro_args_file = PACKAGE_DIR / 'config' / 'model_base' / 'default_xacro_args.yaml'
 
     command = module._build_xacro_command(str(xacro_file), xacro_args_file.as_uri(), '')
@@ -82,8 +84,8 @@ def test_launch_node_delegates_params_rendering_to_parameter_file(
     allow_substs: bool, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     module = _load_launch_module()
-    package_share = tmp_path / 'robot_vog'
-    xacro_file = package_share / 'urdf' / 'models' / 'model_base.xacro'
+    package_share = tmp_path / 'robot_rbvogui_common'
+    xacro_file = package_share / 'urdf' / 'model_base.xacro'
     params_file = tmp_path / 'params.yaml'
     xacro_file.parent.mkdir(parents=True)
     xacro_file.touch()
@@ -117,6 +119,7 @@ def test_launch_node_delegates_params_rendering_to_parameter_file(
             'robot_rsp_params_file': str(params_file),
             'robot_rsp_params_file_allow_substs': str(allow_substs),
             'robot_model': 'base',
+            'robot_description_package': 'robot_rbvogui_common',
             'robot_xacro_args_file': '',
             'robot_sim_file': '',
             'use_sim_time': 'False',

@@ -5,7 +5,7 @@ import pytest
 import yaml
 
 from conftest import PACKAGE_DIR
-from robot_vog import model_utils
+from robot_rbvogui_common import model_utils
 
 RUNTIME_XACRO_ARGS = {'namespace', 'robot_name', 'sim_file'}
 
@@ -23,13 +23,11 @@ def _normalize_scalar(value: object) -> str:
 
 @pytest.mark.parametrize('robot_model', ['base', 'forklift'])
 def test_default_model_xacro_args_match_the_xacro_contract(robot_model: str) -> None:
-    common_defaults = _xacro_arg_defaults(PACKAGE_DIR / 'urdf' / 'includes' / 'common.xacro')
+    common_defaults = _xacro_arg_defaults(PACKAGE_DIR / 'urdf' / 'common.xacro')
     model_defaults = common_defaults
 
     if robot_model == 'forklift':
-        fork_defaults = _xacro_arg_defaults(
-            PACKAGE_DIR / 'urdf' / 'includes' / 'fork_simple_module.xacro'
-        )
+        fork_defaults = _xacro_arg_defaults(PACKAGE_DIR / 'urdf' / 'model_forklift.xacro')
         model_defaults = {**common_defaults, **fork_defaults}
 
     expected_defaults = {
@@ -50,6 +48,6 @@ def test_model_utils_lists_public_robot_models() -> None:
 
 
 def test_legacy_xargs_contract_is_removed() -> None:
-    xargs_dir = PACKAGE_DIR / 'robot_vog' / 'xargs'
+    xargs_dir = PACKAGE_DIR / 'robot_rbvogui_common' / 'xargs'
 
     assert not list(xargs_dir.glob('*.yaml'))

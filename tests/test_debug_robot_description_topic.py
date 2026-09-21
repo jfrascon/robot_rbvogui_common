@@ -109,9 +109,9 @@ def test_debug_topic_remapping_precedes_every_user_remapping_mechanism(
 @pytest.mark.parametrize(
     ('configured_topic', 'expected_topic'),
     [
-        ('robot_description', '/sim_debug/vog/robot_description'),
-        ('rdesc', '/sim_debug/vog/rdesc'),
-        ('nested/rdesc', '/sim_debug/vog/nested/rdesc'),
+        ('robot_description', '/sim_debug/rbvogui/robot_description'),
+        ('rdesc', '/sim_debug/rbvogui/rdesc'),
+        ('nested/rdesc', '/sim_debug/rbvogui/nested/rdesc'),
         ('/rdesc', '/rdesc'),
     ],
 )
@@ -123,7 +123,7 @@ def test_spawn_uses_the_resolved_debug_robot_description_topic(
     ctx.launch_configurations.update(
         {
             'namespace': '/sim_debug',
-            'robot_name': 'vog',
+            'robot_name': 'rbvogui',
             'robot_description_topic': configured_topic,
             'world_name': 'debug_world',
         }
@@ -165,7 +165,7 @@ def test_debug_robot_description_topic_rejects_invalid_shared_names(
     ctx.launch_configurations.update(
         {
             'namespace': '/sim_debug',
-            'robot_name': 'vog',
+            'robot_name': 'rbvogui',
             'robot_description_topic': invalid_topic,
             'robot_rsp_node_args': '{}',
         }

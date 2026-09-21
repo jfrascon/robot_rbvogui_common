@@ -53,7 +53,7 @@ def generate_launch_description() -> LaunchDescription:
             rlh.RequireFile(path=LaunchConfiguration('robot_bridge_config_file')),
             # Insert `robot_type`, `robot_namespace` and `robot_prefix` into the launch context.
             # Their values can then be substituted in the parameter file if needed.
-            SetLaunchConfiguration('robot_type', 'vog'),
+            SetLaunchConfiguration('robot_type', 'rbvogui'),
             rlh.SetRobotNamespace(
                 namespace=LaunchConfiguration('namespace'),
                 robot_name=LaunchConfiguration('robot_name'),

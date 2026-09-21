@@ -78,24 +78,28 @@
       </link>
     </model>
     <include>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Rescue Randy</uri>
-      <name>front_rescuer</name>
+      <uri>model://shelf</uri>
+      <name>front_shelf</name>
       <pose>4 0 0 0 0 1.5708</pose>
+      <static>true</static>
     </include>
     <include>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Rescue Randy</uri>
-      <name>back_rescuer</name>
+      <uri>model://shelf</uri>
+      <name>back_shelf</name>
       <pose>-4 0 0 0 0 -1.5708</pose>
+      <static>true</static>
     </include>
     <include>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Rescue Randy</uri>
-      <name>right_rescuer</name>
+      <uri>model://shelf</uri>
+      <name>right_shelf</name>
       <pose>0 -4 0 0 0 0</pose>
+      <static>true</static>
     </include>
     <include>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Rescue Randy</uri>
-      <name>left_rescuer</name>
+      <uri>model://shelf</uri>
+      <name>left_shelf</name>
       <pose>0 4 0 0 0 3.1416</pose>
+      <static>true</static>
     </include>
     <atmosphere type="adiabatic"/>
     <gravity>0 0 -9.8000000000000007</gravity>

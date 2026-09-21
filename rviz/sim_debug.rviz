@@ -8,7 +8,7 @@ Panels:
         - /back_top_lidar1/Topic1
         - /right_lidar_2d1/Topic1
       Splitter Ratio: 0.5
-    Tree Height: 544
+    Tree Height: 374
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Views
@@ -63,7 +63,7 @@ Visualization Manager:
         Durability Policy: Transient Local
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /sim_debug/vog/robot_description
+        Value: /sim_debug/rbvogui/robot_description
       Enabled: true
       Links:
         All Links Enabled: true
@@ -71,192 +71,102 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        vog_back_top_lidar_imu_link:
+        rbvogui_back_top_lidar_imu_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        vog_back_top_lidar_link:
+        rbvogui_back_top_lidar_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        vog_back_top_lidar_root_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_battery_link:
+        rbvogui_back_top_lidar_root_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_base_footprint_link:
+        rbvogui_base_footprint_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        vog_base_link:
+        rbvogui_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        vog_chassis_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_fork_camera_bottom_screw_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_color_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_color_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_infra1_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_infra1_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_infra2_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_infra2_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_fork_camera_link:
+        rbvogui_basket_chassis_closed_livox_supports_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_carriage_link:
+        rbvogui_battery_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_left_mast_link:
+        rbvogui_chassis_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_left_tine_bottom_plate_link:
+        rbvogui_fork_root_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_left_tine_front_plate_link:
+        rbvogui_front_bottom_lidar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rbvogui_front_bottom_lidar_root_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_left_tine_link:
+        rbvogui_front_left_wheel_rotation_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_left_tine_shank_link:
+        rbvogui_front_left_wheel_steerable_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rbvogui_front_right_wheel_rotation_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_right_mast_link:
+        rbvogui_front_right_wheel_steerable_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rbvogui_front_top_lidar_imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rbvogui_front_top_lidar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rbvogui_front_top_lidar_root_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_right_tine_bottom_plate_link:
+        rbvogui_rear_left_wheel_rotation_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_right_tine_front_plate_link:
+        rbvogui_rear_left_wheel_steerable_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rbvogui_rear_right_wheel_rotation_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vog_fork_right_tine_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_fork_right_tine_shank_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_fork_root_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_front_bottom_lidar_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_front_bottom_lidar_root_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_front_left_wheel_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_front_left_wheel_steerable_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_front_right_wheel_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_front_right_wheel_steerable_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_front_top_lidar_imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_front_top_lidar_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_front_top_lidar_root_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_rear_left_wheel_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_rear_left_wheel_steerable_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        vog_rear_right_wheel_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        vog_rear_right_wheel_steerable_link:
+        rbvogui_rear_right_wheel_steerable_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -297,7 +207,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /sim_debug/vog/front_top_lidar/scan/points
+        Value: /sim_debug/rbvogui/front_top_lidar/scan/points
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -331,7 +241,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /sim_debug/vog/front_bottom_lidar/scan
+        Value: /sim_debug/rbvogui/front_bottom_lidar/scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -364,7 +274,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /sim_debug/vog/back_top_lidar/scan/points
+        Value: /sim_debug/rbvogui/back_top_lidar/scan/points
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -398,7 +308,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /sim_debug/vog/left_lidar2d/scan
+        Value: /sim_debug/rbvogui/left_lidar2d/scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -432,7 +342,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /sim_debug/vog/right_lidar2d/scan
+        Value: /sim_debug/rbvogui/right_lidar2d/scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -466,14 +376,14 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /sim_debug/vog/back_lidar2d/scan
+        Value: /sim_debug/rbvogui/back_lidar2d/scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: vog_base_footprint_link
+    Fixed Frame: rbvogui_base_footprint_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -487,38 +397,38 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz_default_plugins/Orbit
-      Distance: 11.359975814819336
+      Class: rviz_default_plugins/XYOrbit
+      Distance: 5.806879997253418
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.539344072341919
-        Y: 4.017985820770264
-        Z: -0.8987893462181091
+        X: 2.477141857147217
+        Y: 2.788191795349121
+        Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.39724603295326233
+      Pitch: 0.6122459173202515
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz_default_plugins)
-      Yaw: 4.282655715942383
+      Value: XYOrbit (rviz_default_plugins)
+      Yaw: 0.2744731903076172
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 996
+  Height: 964
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002c80000038efc0200000003fb000000100044006900730070006c006100790073010000003b0000025b000000c700fffffffb0000001200530065006c0065006300740069006f006e010000029c0000005c0000005c00fffffffb0000000a0056006900650077007301000002fe000000cb000000a000ffffff000004b20000038e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000002c80000036efc0200000003fb000000100044006900730070006c006100790073010000003b000001b1000000c700fffffffb0000001200530065006c0065006300740069006f006e01000001f20000009e0000005c00fffffffb0000000a00560069006500770073010000029600000113000000a000ffffff000004b20000036e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Views:
     collapsed: false
   Width: 1920
-  X: 1920
-  Y: 0
+  X: 0
+  Y: 32
