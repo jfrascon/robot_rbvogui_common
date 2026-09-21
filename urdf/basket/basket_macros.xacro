@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<!--
+Convention for parameter types:
+S means string
+-->
+<robot name="basket_macros" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find robotics_description)/urdf/common/all_commons.xacro"/>
+
+  <xacro:property name="basket_chassis_visual_mesh"
+                  value="robot_rbvogui_common/meshes/basket/basket_container.obj"/>
+  <xacro:property name="basket_chassis_collision_mesh"
+                  value="robot_rbvogui_common/meshes/basket/basket_container.stl"/>
+  <xacro:property name="basket_chassis_closed_visual_mesh"
+                  value="robot_rbvogui_common/meshes/basket/basket_container.obj"/>
+  <xacro:property name="basket_chassis_closed_collision_mesh"
+                  value="robot_rbvogui_common/meshes/basket/basket_container.stl"/>
+  <xacro:property name="basket_sensors_visual_mesh"
+                  value="robot_rbvogui_common/meshes/basket/basket_sensors.obj"/>
+  <xacro:property name="basket_sensors_collision_mesh"
+                  value="robot_rbvogui_common/meshes/basket/basket_sensors.stl"/>
+
+  <!--
+  Macro for the basket chassis.
+  joint_parent_fr_basket_fr (S): Basket chassis pose relative to parent.
+      joint_parent_fr_basket_fr (S) = 'x y z roll pitch yaw'
+  -->
+  <xacro:macro name="basket_chassis_macro"
+               params="prefix
+                       parent
+                       joint_parent_fr_basket_fr:='0 0 0 0 0 0'">
+    <joint name="${prefix}basket_chassis_joint" type="fixed">
+      <xacro:origin_element origin="${joint_parent_fr_basket_fr}"/>
+      <parent link="${parent}"/>
+      <child link="${prefix}basket_root_link"/>
+    </joint>
+
+    <link name="${prefix}basket_root_link">
+      <xacro:visual_mesh mesh="${basket_chassis_visual_mesh}"/>
+      <xacro:collision_mesh mesh="${basket_chassis_collision_mesh}"/>
+      <xacro:null_inertia/>
+    </link>
+  </xacro:macro>
+
+  <!--
+  Macro for the closed basket chassis.
+  joint_parent_fr_basket_fr (S): Basket chassis pose relative to parent.
+      joint_parent_fr_basket_fr (S) = 'x y z roll pitch yaw'
+  -->
+  <xacro:macro name="basket_chassis_closed_macro"
+               params="prefix
+                       parent
+                       joint_parent_fr_basket_fr:='0 0 0 0 0 0'">
+    <joint name="${prefix}basket_chassis_closed_joint" type="fixed">
+      <xacro:origin_element origin="${joint_parent_fr_basket_fr}"/>
+      <parent link="${parent}"/>
+      <child link="${prefix}basket_root_link"/>
+    </joint>
+
+    <link name="${prefix}basket_root_link">
+      <xacro:visual_mesh mesh="${basket_chassis_closed_visual_mesh}"/>
+      <xacro:collision_mesh mesh="${basket_chassis_closed_collision_mesh}"/>
+      <xacro:null_inertia/>
+    </link>
+  </xacro:macro>
+
+  <!--
+  Macro for the closed basket chassis with sensor mounts.
+  joint_parent_fr_basket_fr (S): Basket chassis pose relative to parent.
+      joint_parent_fr_basket_fr (S) = 'x y z roll pitch yaw'
+  -->
+  <xacro:macro name="basket_sensors"
+               params="prefix
+                       parent
+                       joint_parent_fr_basket_fr:='0 0 0 0 0 0'">
+    <joint name="${prefix}basket_chassis_closed_livox_supports_joint" type="fixed">
+      <xacro:origin_element origin="${joint_parent_fr_basket_fr}"/>
+      <parent link="${parent}"/>
+      <child link="${prefix}basket_root_link"/>
+    </joint>
+
+    <link name="${prefix}basket_root_link">
+      <xacro:visual_mesh mesh="${basket_sensors_visual_mesh}"/>
+      <xacro:collision_mesh mesh="${basket_sensors_collision_mesh}"/>
+      <xacro:null_inertia/>
+    </link>
+  </xacro:macro>
+</robot>
